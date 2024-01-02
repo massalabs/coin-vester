@@ -1,5 +1,5 @@
 import {Storage} from "@massalabs/massa-as-sdk";
-import {bytesToU64, u64ToBytes, u8toByte} from "@massalabs/as-types";
+import {Amount, bytesToU64, u64ToBytes, u8toByte} from "@massalabs/as-types";
 
 /**
  * Create a unique ID.
@@ -21,3 +21,9 @@ export function createUniqueId(): u64 {
 
     return id;
 }
+
+export function isValidMAS(amount: Amount): bool {
+    // check that the amounts have the right currency and precision (MAS, 1e-9)
+    return amount.currency.name === 'MAS' && amount.currency.minorUnit === 9;
+}
+

@@ -5,9 +5,9 @@ import {Address, call, mockScCall, resetStorage, Storage} from '@massalabs/massa
   createVestingSession,
   clearVestingSession,
 } from '../contracts/main';*/
-import {Amount, Args, u64ToBytes, u8toByte} from '@massalabs/as-types';
+import {Amount, Args, Currency, u64ToBytes, u8toByte} from '@massalabs/as-types';
 
-import { createUniqueId } from "../contracts/utils";
+import {createUniqueId, isValidMAS} from "../contracts/utils";
 
 /**
  * Get the vesting info storage key.
@@ -87,6 +87,20 @@ describe('Unique id overflow', () => {
 
   throws('create unique id', () => {
     let id1 = createUniqueId();
+  });
+});
+
+describe('Check amount', () => {
+
+  it('Not MAS', () => {
+    const usdt = new Currency("USDT", 9);
+    let a = new Amount(42, usdt);
+    expect(isValidMAS(a)).toBe(false);
+  });
+  it('Not enough precision', () => {
+    const usdt5 = new Currency("MAS", 5);
+    let a = new Amount(42, usdt5);
+    expect(isValidMAS(a)).toBe(false);
   });
 });
 

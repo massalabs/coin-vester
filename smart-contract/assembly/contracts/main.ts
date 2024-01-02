@@ -16,7 +16,7 @@ import {
 
 import { u128 } from 'as-bignum/assembly';
 
-import { createUniqueId } from "./utils";
+import {createUniqueId, isValidMAS} from "./utils";
 
 /**
  * Convert u64 to MAS Amount
@@ -73,14 +73,12 @@ class VestingSessionInfo {
 
     // check that the amounts have the right currency and precision (MAS, 1e-9)
     if (
-      this.totalAmount.currency.name !== 'MAS' ||
-      this.totalAmount.currency.minorUnit !== 9
+      !isValidMAS(this.totalAmount)
     ) {
       throw new Error('total_amount must be in MAS.');
     }
     if (
-      this.initialReleaseAmount.currency.name !== 'MAS' ||
-      this.initialReleaseAmount.currency.minorUnit !== 9
+      !isValidMAS(this.initialReleaseAmount)
     ) {
       throw new Error('initial_release_amount must be in MAS.');
     }
@@ -278,6 +276,14 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   const amount: Amount = deser
     .nextSerializable<Amount>()
     .expect('Missing amount argument.');
+
+  if (!isValidMAS(amount)) {
+    throw new Error("Claimed amount must be in MAS");
+  }
+  if (amount.value === 0) {
+    throw new Error("Claimed amount must be > 0");
+  }
+
   if (deser.offset !== args.length) {
     throw new Error('Extra data in buffer.');
   }
