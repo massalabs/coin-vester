@@ -172,9 +172,7 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   if (!isValidMAS(amount)) {
     throw new Error("Claimed amount must be in MAS");
   }
-  if (amount.value === 0) {
-    throw new Error("Claimed amount must be > 0");
-  }
+  // Note: allow amount.value = 0, so it can be used as a proof of vesting ownership
 
   if (deser.offset !== args.length) {
     throw new Error('Extra data in buffer.');
