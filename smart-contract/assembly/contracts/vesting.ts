@@ -17,6 +17,8 @@ import { u128 } from 'as-bignum/assembly';
 
 import{isValidMAS, u64ToMAS} from "./utils";
 
+const MAX_TAG_LEN: i32 = 127;
+
 /**
  * VestingSchedule structure
  */
@@ -52,6 +54,10 @@ export class VestingSessionInfo {
         this.tag = argsObj.nextString().expect('Missing tag argument.');
         if (argsObj.offset !== bytes.length) {
             throw new Error('Extra data in buffer.');
+        }
+
+        if (this.tag.length > MAX_TAG_LEN) {
+            throw new Error('Tag is too long');
         }
 
         // check that the amounts have the right currency and precision (MAS, 1e-9)

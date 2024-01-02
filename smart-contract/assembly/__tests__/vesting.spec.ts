@@ -159,7 +159,33 @@ describe("Vesting session info", () => {
     expect(svi.getUnlockedAt(u64.MAX_VALUE)).toBe(totalAmount);
   });
 
-  it("test limits", () => {
+  throws("test limits 1", () => {
+
+    const addr_1 = new Address(
+        'AU12UBnqTHDQALpocVBnkPNy7y5CndUJQTLutaVDDFgMJcq5kQiKq',
+    );
+
+    let totalAmount = u64ToMAS(420);
+    let initialReleaseAmount_: u64 = 220;
+    let initialReleaseAmount = u64ToMAS(initialReleaseAmount_);
+    let startTimestamp = 5;
+    let cliffDuration = 10;
+    let linearDuration = 10;
+    let tag = "2".repeat(200);
+    let session_args = serializeVestingInfo(
+        addr_1,
+        totalAmount,
+        startTimestamp,
+        initialReleaseAmount,
+        cliffDuration,
+        linearDuration,
+        tag
+    );
+
+    let svi = new VestingSessionInfo(session_args);
+  });
+
+  it("test limits 2", () => {
 
     const addr_1 = new Address(
         'AU12UBnqTHDQALpocVBnkPNy7y5CndUJQTLutaVDDFgMJcq5kQiKq',
