@@ -1,39 +1,52 @@
-import {Storage} from "@massalabs/massa-as-sdk";
-import {Amount, bytesToU64, Currency, u64ToBytes, u8toByte} from "@massalabs/as-types";
+import { Address, Storage } from '@massalabs/massa-as-sdk';
+import { Args } from '@massalabs/as-types';
 
 /**
  * Create a unique ID.
  * @returns a unique ID
  */
 export function createUniqueId(): u64 {
-    const prefix = u8toByte(0x01);
+  const prefixTag: u8 = 0x01;
+  const prefix = new Args().add(prefixTag).serialize();
 
-    // get the counter
-    let id: u64 = 0;
-    if (Storage.has(prefix)) {
-        let current_id: u64 = bytesToU64(Storage.get(prefix));
-        assert(current_id < u64.MAX_VALUE);
-        id = current_id + 1;
-    }
+  // get the counter
+  let id: u64 = 0;
+  if (Storage.has(prefix)) {
+    let currentId = new Args(Storage.get(prefix)).nextU64().unwrap();
+    assert(currentId < u64.MAX_VALUE);
+    id = currentId + 1;
+  }
 
-    // save the updated counter
-    Storage.set(prefix, u64ToBytes(id));
+  // save the updated counter
+  Storage.set(prefix, new Args().add(id).serialize());
 
-    return id;
+  return id;
 }
-
 
 /**
- * Convert u64 to MAS Amount
- * @param amount - Amount in 64
- * @returns
+ * Get the vesting info storage key.
+ * @param toAddr - address of the beneficiary
+ * @param sessionId - vesting session ID
+ * @returns the key for the claimed amount
  */
-export function u64ToMAS(amount: u64): Amount {
-    return new Amount(amount, new Currency('MAS', 9));
+export function getVestingInfoKey(
+  toAddr: Address,
+  sessionId: u64,
+): StaticArray<u8> {
+  const prefix: u8 = 0x02;
+  return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
 
-export function isValidMAS(amount: Amount): bool {
-    // check that the amounts have the right currency and precision (MAS, 1e-9)
-    return amount.currency.name === 'MAS' && amount.currency.minorUnit === 9;
+/**
+ * Get the claimed amount storage key.
+ * @param toAddr - address of the beneficiary
+ * @param sessionId - vesting session ID
+ * @returns the key for the claimed amount
+ */
+export function getClaimedAmountKey(
+  toAddr: Address,
+  sessionId: u64,
+): StaticArray<u8> {
+  const prefix: u8 = 0x03;
+  return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
-
