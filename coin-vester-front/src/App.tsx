@@ -33,6 +33,15 @@ function CoinVester() {
     margin: '5px',
   };
 
+  const deleteButtonStyle = {
+    ...buttonStyle,
+    backgroundColor: 'red',
+    color: 'white',
+    marginTop: '10px',
+    width: '10rem',
+    padding: '10px 20px',
+  };
+
   const handleClaim = (index: number) => {
     // Placeholder function for claim logic
   };
@@ -52,7 +61,7 @@ function CoinVester() {
       borderRadius: '10px',
     }}>
       <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '30px' }}>Coin Vester</h1>
-      
+
       <section style={{ marginBottom: '40px' }}>
         <h2 style={{ color: '#555', marginBottom: '20px' }}>Claim Received Funds</h2>
         {fundsData.map((fund, index) => (
@@ -63,39 +72,49 @@ function CoinVester() {
             marginBottom: '10px',
             backgroundColor: 'white',
             transition: 'box-shadow 0.3s',
+            display: 'flex',
+            flexDirection: 'column',
           }}
           onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)'}
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
           >
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span><strong>Tag:</strong> {fund.tag}</span>
-              <span><strong>Total Amount:</strong> {fund.totalAmount}</span>
-              <span><strong>Start DateTime:</strong> {fund.startDateTime}</span>
-              <span><strong>Initial Release:</strong> {fund.initialRelease}</span>
-              <span><strong>Cliff End DateTime:</strong> {fund.cliffEndDateTime}</span>
-              <span><strong>Linear End DateTime:</strong> {fund.linearEndDateTime}</span>
-              <span><strong>Claimed:</strong> {fund.claimed}</span>
-              <span><strong>Available to Claim:</strong> {fund.availableToClaim}</span>
-              {parseFloat(fund.availableToClaim) > 0 && (
-                <>
-                  <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', marginRight: '5px' }} />
-                  <button 
-                    style={{ ...buttonStyle, backgroundColor: '#4CAF50', color: 'white' }}
-                    onClick={() => handleClaim(index)}
-                  >
-                    Claim
-                  </button>
-                </>
-              )}
-              {parseFloat(fund.availableToClaim) === 0 && (
-                <button
-                  style={{ ...buttonStyle, backgroundColor: 'red', color: 'white' }}
-                  onClick={() => handleDelete(index)}
+            <span><strong>Tag:</strong> {fund.tag}</span>
+            <span><strong>Total Amount:</strong> {fund.totalAmount}</span>
+            <span><strong>Start Date:</strong> {fund.startDateTime}</span>
+            <span><strong>Initial Release:</strong> {fund.initialRelease}</span>
+            <span><strong>Cliff End Date:</strong> {fund.cliffEndDateTime}</span>
+            <span><strong>Linear End Date:</strong> {fund.linearEndDateTime}</span>
+            <span><strong>Claimed:</strong> {fund.claimed}</span>
+            <span><strong>Available to Claim:</strong> {fund.availableToClaim}</span>
+            {parseFloat(fund.availableToClaim) > 0 && (
+              <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
+                <input
+                  type="number"
+                  style={{ 
+                    padding: '10px',
+                    borderRadius: '5px',
+                    border: '1px solid #ddd',
+                    marginRight: '5px',
+                    WebkitAppearance: 'none', // Remove the slider for Webkit browsers
+                    MozAppearance: 'textfield', // Remove the slider for Firefox
+                  }}
+                />
+                <button 
+                  style={{ ...buttonStyle, backgroundColor: '#4CAF50', color: 'white' }}
+                  onClick={() => handleClaim(index)}
                 >
-                  Delete
+                  Claim
                 </button>
-              )}
-            </div>
+              </div>
+            )}
+            {parseFloat(fund.availableToClaim) === 0 && (
+              <button
+                style={deleteButtonStyle}
+                onClick={() => handleDelete(index)}
+              >
+                Delete
+              </button>
+            )}
           </div>
         ))}
       </section>
@@ -108,11 +127,11 @@ function CoinVester() {
           <label style={{ marginBottom: '5px' }}>Recipient Address:</label>
           <input type="text" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
           <label style={{ marginBottom: '5px' }}>Total Amount (MAS):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
+          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }} />
           <label style={{ marginBottom: '5px' }}>Start Time:</label>
           <input type="datetime-local" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
           <label style={{ marginBottom: '5px' }}>Start Release (MAS):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
+          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }} />
           <label style={{ marginBottom: '5px' }}>Cliff End:</label>
           <input type="datetime-local" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} />
           <label style={{ marginBottom: '5px' }}>Linear End:</label>
