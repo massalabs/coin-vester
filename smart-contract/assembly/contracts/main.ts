@@ -9,16 +9,10 @@ import {
 import {
   Args,
   u64ToBytes,
-  bytesToU64,
   u8toByte,
   Amount,
   Currency,
 } from '@massalabs/as-types';
-
-import {
-  onlyOwner,
-  setOwner,
-} from '@massalabs/sc-standards/assembly/contracts/utils/ownership';
 
 import { u128 } from 'as-bignum/assembly';
 
@@ -37,10 +31,6 @@ function u64ToMAS(amount: u64): Amount {
  * This function is meant to be called only one time: when the contract is deployed.
  */
 export function constructor(_: StaticArray<u8>): StaticArray<u8> {
-  // Ensure that this function can't be called in the future.
-  assert(Context.isDeployingContract());
-  // Note: this emits an event CHANGE_OWNER_EVENT_NAME
-  setOwner(new Args().add(Context.caller()).serialize());
   return [];
 }
 
@@ -241,8 +231,6 @@ function consolidatePayment(
  */
 export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
 
-  onlyOwner();
-
   // get the initial balance of the smart contract
   const initialSCBalance = u64ToMAS(balance());
 
@@ -344,8 +332,6 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
  * @returns
  */
 export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
-
-  onlyOwner();
 
   // get the initial balance of the smart contract
   const initialSCBalance = u64ToMAS(balance());
