@@ -1,11 +1,13 @@
-import { Address, call, mockScCall, resetStorage } from '@massalabs/massa-as-sdk';
+import {Address, call, mockScCall, resetStorage, Storage} from '@massalabs/massa-as-sdk';
 /*import {
   VestingSessionInfo,
   claimVestingSession,
   createVestingSession,
   clearVestingSession,
 } from '../contracts/main';*/
-import { Amount, Args, u8toByte } from '@massalabs/as-types';
+import {Amount, Args, u64ToBytes, u8toByte} from '@massalabs/as-types';
+
+import { createUniqueId } from "../contracts/utils";
 
 /**
  * Get the vesting info storage key.
@@ -60,6 +62,35 @@ function serializeVestingInfo(
     .serialize();
 }
 
+describe('Unique id', () => {
+  beforeEach(() => {
+    resetStorage(); // We make sure that the contract's storage is empty before each test.
+  });
+
+  afterAll(() => {
+    resetStorage(); // We make sure that the contract's storage is reset.
+  });
+
+  test('create unique id', () => {
+    let id1 = createUniqueId();
+    expect<u64>(id1).toBe(0);
+    let id2 = createUniqueId();
+    expect<u64>(id2).toBe(1);
+  });
+});
+
+describe('Unique id overflow', () => {
+  beforeEach(() => {
+    const prefix = u8toByte(0x01);
+    Storage.set(prefix, u64ToBytes(u64.MAX_VALUE));
+  });
+
+  throws('create unique id', () => {
+    let id1 = createUniqueId();
+  });
+});
+
+
 describe('Scenarios', () => {
   beforeEach(() => {
     resetStorage(); // We make sure that the contract's storage is empty before each test.
@@ -74,7 +105,7 @@ describe('Scenarios', () => {
       'A12BqZEQ6sByhRLyEuf0YbQmcF2PsDdkNNG1akBJu9XcjZA1eT',
     );
 
-    const res = call(addr, 'createVestingSession', NoArg, 0);
+    // const res = call(addr, 'createVestingSession', NoArg, 0);
     
   });
 

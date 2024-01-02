@@ -14,7 +14,15 @@ import {
   Amount,
   Currency,
 } from '@massalabs/as-types';
+
+import {
+  onlyOwner,
+  setOwner,
+} from '@massalabs/sc-standards/assembly/contracts/utils/ownership';
+
 import { u128 } from 'as-bignum/assembly';
+
+import { createUniqueId } from "./utils";
 
 /**
  * Convert u64 to MAS Amount
@@ -29,13 +37,17 @@ function u64ToMAS(amount: u64): Amount {
  * This function is meant to be called only one time: when the contract is deployed.
  */
 export function constructor(_: StaticArray<u8>): StaticArray<u8> {
+  // Ensure that this function can't be called in the future.
+  assert(Context.isDeployingContract());
+  // Note: this emits an event CHANGE_OWNER_EVENT_NAME
+  setOwner(new Args().add(Context.caller()).serialize());
   return [];
 }
 
 /**
  * VestingSchedule structure
  */
-export class VestingSessionInfo {
+class VestingSessionInfo {
   toAddr: Address;
   totalAmount: Amount;
   startTimestamp: u64;
@@ -137,25 +149,6 @@ export class VestingSessionInfo {
 }
 
 /**
- * Create a unique ID.
- * @returns a unique ID
- */
-function createUniqueId(): u64 {
-  const prefix = u8toByte(0x01);
-
-  // get the counter
-  let id: u64 = 0;
-  if (Storage.has(prefix)) {
-    id = bytesToU64(Storage.get(prefix)) + 1;
-  }
-
-  // save the updated counter
-  Storage.set(prefix, u64ToBytes(id));
-
-  return id;
-}
-
-/**
  * Get the vesting info storage key.
  * @param toAddr - address of the beneficiary
  * @param sessionId - vesting session ID
@@ -247,6 +240,9 @@ function consolidatePayment(
  * @returns the vesting session ID
  */
 export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
+
+  onlyOwner();
+
   // get the initial balance of the smart contract
   const initialSCBalance = u64ToMAS(balance());
 
@@ -348,6 +344,9 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
  * @returns
  */
 export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
+
+  onlyOwner();
+
   // get the initial balance of the smart contract
   const initialSCBalance = u64ToMAS(balance());
 
