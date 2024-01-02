@@ -13,7 +13,9 @@ export function createUniqueId(): u64 {
   let id: u64 = 0;
   if (Storage.has(prefix)) {
     let currentId = new Args(Storage.get(prefix)).nextU64().unwrap();
-    assert(currentId < u64.MAX_VALUE);
+    if (currentId == u64.MAX_VALUE) {
+      throw new Error('ID overflow');
+    }
     id = currentId + 1;
   }
 
