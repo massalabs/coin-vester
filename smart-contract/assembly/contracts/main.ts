@@ -16,16 +16,7 @@ import {
 
 import { u128 } from 'as-bignum/assembly';
 
-import {createUniqueId, isValidMAS} from "./utils";
-
-/**
- * Convert u64 to MAS Amount
- * @param amount - Amount in 64
- * @returns
- */
-function u64ToMAS(amount: u64): Amount {
-  return new Amount(amount, new Currency('MAS', 9));
-}
+import {createUniqueId, isValidMAS, u64ToMAS} from "./utils";
 
 /**
  * This function is meant to be called only one time: when the contract is deployed.

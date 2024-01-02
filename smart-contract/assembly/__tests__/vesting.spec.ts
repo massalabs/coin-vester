@@ -1,13 +1,9 @@
 import {Address, call, mockScCall, resetStorage, Storage} from '@massalabs/massa-as-sdk';
-/*import {
-  VestingSessionInfo,
-  claimVestingSession,
-  createVestingSession,
-  clearVestingSession,
-} from '../contracts/main';*/
-import {Amount, Args, Currency, u64ToBytes, u8toByte} from '@massalabs/as-types';
+import {Amount, Args, bytesToU64, Currency, u64ToBytes, u8toByte} from '@massalabs/as-types';
 
-import {createUniqueId, isValidMAS} from "../contracts/utils";
+import {createUniqueId, isValidMAS, u64ToMAS} from "../contracts/utils";
+import {createVestingSession} from "../../build/main";
+
 
 /**
  * Get the vesting info storage key.
@@ -15,10 +11,12 @@ import {createUniqueId, isValidMAS} from "../contracts/utils";
  * @param sessionId - vesting session ID
  * @returns the key for the claimed amount
  */
+/*
 function getVestingInfoKey(toAddr: Address, sessionId: u64): StaticArray<u8> {
   const prefix = u8toByte(0x02);
   return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
+*/
 
 /**
  * Get the claimed amount storage key.
@@ -26,10 +24,12 @@ function getVestingInfoKey(toAddr: Address, sessionId: u64): StaticArray<u8> {
  * @param sessionId - vesting session ID
  * @returns the key for the claimed amount
  */
+/*
 function getClaimedAmountKey(toAddr: Address, sessionId: u64): StaticArray<u8> {
   const prefix = u8toByte(0x03);
   return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
+*/
 
 /**
  * Serialize vesting info.
@@ -115,12 +115,34 @@ describe('Scenarios', () => {
   });
 
   test('createSession', () => {
-    const addr = new Address(
+    const addr_1 = new Address(
       'A12BqZEQ6sByhRLyEuf0YbQmcF2PsDdkNNG1akBJu9XcjZA1eT',
     );
 
     // const res = call(addr, 'createVestingSession', NoArg, 0);
-    
+
+    let totalAmount = u64ToMAS(420);
+    let initialReleaseAmount = u64ToMAS(220);
+    let startTimestamp = 0;
+    let cliffDuration = 10;
+    let linearDuration = 5;
+    let tag = "42";
+    let session_args = serializeVestingInfo(
+        addr_1,
+        totalAmount,
+        0,
+        initialReleaseAmount,
+        cliffDuration,
+        linearDuration,
+        tag
+        );
+
+    let session_id_bytes = createVestingSession(session_args);
+    let session_id = bytesToU64(session_id_bytes);
+
+    // let session_id = 1;
+    log<string>(`Session 1: ${session_id}`);
+
   });
 
   /*

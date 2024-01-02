@@ -1,5 +1,5 @@
 import {Storage} from "@massalabs/massa-as-sdk";
-import {Amount, bytesToU64, u64ToBytes, u8toByte} from "@massalabs/as-types";
+import {Amount, bytesToU64, Currency, u64ToBytes, u8toByte} from "@massalabs/as-types";
 
 /**
  * Create a unique ID.
@@ -20,6 +20,16 @@ export function createUniqueId(): u64 {
     Storage.set(prefix, u64ToBytes(id));
 
     return id;
+}
+
+
+/**
+ * Convert u64 to MAS Amount
+ * @param amount - Amount in 64
+ * @returns
+ */
+export function u64ToMAS(amount: u64): Amount {
+    return new Amount(amount, new Currency('MAS', 9));
 }
 
 export function isValidMAS(amount: Amount): bool {
