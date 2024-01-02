@@ -38,9 +38,7 @@ function CoinVester() {
   };
 
   const handleDelete = (index: number) => {
-    const newData = [...fundsData];
-    newData.splice(index, 1);
-    setFundsData(newData);
+    // Placeholder function for delete logic
   };
 
   return (
