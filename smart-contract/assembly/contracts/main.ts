@@ -4,177 +4,23 @@ import {
   Storage,
   balance,
   transferCoins,
-  Address,
 } from '@massalabs/massa-as-sdk';
-import {
-  Args,
-  u64ToBytes,
-  bytesToU64,
-  u8toByte,
-  Amount,
-  Currency,
-} from '@massalabs/as-types';
+import { Args } from '@massalabs/as-types';
+
 import { u128 } from 'as-bignum/assembly';
 
-/**
- * Convert u64 to MAS Amount
- * @param amount - Amount in 64
- * @returns
- */
-function u64ToMAS(amount: u64): Amount {
-  return new Amount(amount, new Currency('MAS', 9));
-}
+import {
+  createUniqueId,
+  getVestingInfoKey,
+  getClaimedAmountKey,
+} from './utils';
+import { VestingSessionInfo } from './vesting';
 
 /**
  * This function is meant to be called only one time: when the contract is deployed.
  */
 export function constructor(_: StaticArray<u8>): StaticArray<u8> {
   return [];
-}
-
-/**
- * VestingSchedule structure
- */
-export class VestingSessionInfo {
-  toAddr: Address;
-  totalAmount: Amount;
-  startTimestamp: u64;
-  initialReleaseAmount: Amount;
-  cliffDuration: u64;
-  linearDuration: u64;
-  tag: string;
-
-  constructor(bytes: StaticArray<u8>) {
-    const argsObj = new Args(bytes);
-    this.toAddr = argsObj
-      .nextSerializable<Address>()
-      .expect('Missing to_addr argument.');
-    this.totalAmount = argsObj
-      .nextSerializable<Amount>()
-      .expect('Missing total_amount argument.');
-    this.startTimestamp = argsObj
-      .nextU64()
-      .expect('Missing start_timestamp argument.');
-    this.initialReleaseAmount = argsObj
-      .nextSerializable<Amount>()
-      .expect('Missing initial_release_amount argument.');
-    this.cliffDuration = argsObj
-      .nextU64()
-      .expect('Missing cliff_duration argument.');
-    this.linearDuration = argsObj
-      .nextU64()
-      .expect('Missing linear_duration argument.');
-    this.tag = argsObj.nextString().expect('Missing tag argument.');
-    if (argsObj.offset !== bytes.length) {
-      throw new Error('Extra data in buffer.');
-    }
-
-    // check that the amounts have the right currency and precision (MAS, 1e-9)
-    if (
-      this.totalAmount.currency.name !== 'MAS' ||
-      this.totalAmount.currency.minorUnit !== 9
-    ) {
-      throw new Error('total_amount must be in MAS.');
-    }
-    if (
-      this.initialReleaseAmount.currency.name !== 'MAS' ||
-      this.initialReleaseAmount.currency.minorUnit !== 9
-    ) {
-      throw new Error('initial_release_amount must be in MAS.');
-    }
-
-    // check that the initial release amount is not greater than the total amount
-    if (this.initialReleaseAmount > this.totalAmount) {
-      throw new Error(
-        'initial_release_amount cannot be greater than total_amount.',
-      );
-    }
-  }
-
-  /**
-   * @param currentTimestamp - current timestamp
-   * @returns the amount that has been unlocked at the given timestamp
-   */
-  public getUnlockedAt(timestamp: u64): Amount {
-    // before activation
-    if (timestamp < this.startTimestamp) {
-      return u64ToMAS(0);
-    }
-
-    // during cliff
-    if (timestamp - this.startTimestamp < this.cliffDuration) {
-      return this.initialReleaseAmount;
-    }
-
-    // time after cliff end
-    const timeAfterCliffEnd =
-      timestamp - this.startTimestamp - this.cliffDuration;
-
-    // after linear release
-    if (timeAfterCliffEnd >= this.linearDuration) {
-      // full release
-      return this.totalAmount;
-    }
-
-    // total amount to be released linearly
-    const linearAmount: Amount = (
-      this.totalAmount - this.initialReleaseAmount
-    ).unwrap();
-
-    // amount released linearly so far
-    // use unsigned 128 bit integer to avoid overflow
-
-    const linearReleased = u64ToMAS(
-      (
-        (u128.fromU64(linearAmount.value) * u128.fromU64(timeAfterCliffEnd)) /
-        u128.fromU64(this.linearDuration)
-      ).toU64(),
-    );
-
-    // total released amount until timestamp
-    return (this.initialReleaseAmount + linearReleased).unwrap();
-  }
-}
-
-/**
- * Create a unique ID.
- * @returns a unique ID
- */
-function createUniqueId(): u64 {
-  const prefix = u8toByte(0x01);
-
-  // get the counter
-  let id: u64 = 0;
-  if (Storage.has(prefix)) {
-    id = bytesToU64(Storage.get(prefix)) + 1;
-  }
-
-  // save the updated counter
-  Storage.set(prefix, u64ToBytes(id));
-
-  return id;
-}
-
-/**
- * Get the vesting info storage key.
- * @param toAddr - address of the beneficiary
- * @param sessionId - vesting session ID
- * @returns the key for the claimed amount
- */
-function getVestingInfoKey(toAddr: Address, sessionId: u64): StaticArray<u8> {
-  const prefix = u8toByte(0x02);
-  return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
-}
-
-/**
- * Get the claimed amount storage key.
- * @param toAddr - address of the beneficiary
- * @param sessionId - vesting session ID
- * @returns the key for the claimed amount
- */
-function getClaimedAmountKey(toAddr: Address, sessionId: u64): StaticArray<u8> {
-  const prefix = u8toByte(0x03);
-  return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
 
 /**
@@ -186,58 +32,51 @@ function getClaimedAmountKey(toAddr: Address, sessionId: u64): StaticArray<u8> {
  * @param callerDebit - Non-storage coins expected to have been send by the caller to the SC for the call
  */
 function consolidatePayment(
-  initialSCBalance: Amount,
-  internalSCCredits: Amount,
-  internalSCDebits: Amount,
-  callerCredit: Amount,
-  callerDebit: Amount,
+  initialSCBalance: u64,
+  internalSCCredits: u64,
+  internalSCDebits: u64,
+  callerCredit: u64,
+  callerDebit: u64,
 ): void {
   // How much we charge the caller:
   // caller_cost = initial_sc_balance + internal_sc_credits + caller_debit - internal_sc_debits - get_balance()
   const callerCostPos: u128 =
-    u128.fromU64(initialSCBalance.value) +
-    u128.fromU64(internalSCCredits.value) +
-    u128.fromU64(callerDebit.value);
+    u128.fromU64(initialSCBalance) +
+    u128.fromU64(internalSCCredits) +
+    u128.fromU64(callerDebit);
   const callerCostNeg: u128 =
-    u128.fromU64(internalSCDebits.value) +
-    u128.fromU64(callerCredit.value) +
+    u128.fromU64(internalSCDebits) +
+    u128.fromU64(callerCredit) +
     u128.fromU64(balance());
-  const callerPayment: Amount = u64ToMAS(Context.transferredCoins());
+  const callerPayment: u128 = u128.fromU64(Context.transferredCoins());
 
   if (callerCostPos >= callerCostNeg) {
     // caller needs to pay
-    const delta: u128 = callerCostPos - callerCostNeg;
-    if (delta > u128.fromU64(u64.MAX_VALUE)) {
-      throw new Error('Overflow');
-    }
-    const callerCost: Amount = u64ToMAS(delta.toU64());
+    const callerCost: u128 = callerCostPos - callerCostNeg;
     if (callerPayment < callerCost) {
       // caller did not pay enough
       throw new Error(
         'Need at least ' +
-          callerCost.value.toString() +
+          callerCost.toString() +
           ' elementary coin units to pay but only ' +
-          callerPayment.value.toString() +
+          callerPayment.toString() +
           ' were sent.',
       );
     } else if (callerPayment > callerCost) {
       // caller paid too much: send remainder back
-      transferCoins(
-        Context.caller(),
-        (callerPayment - callerCost).unwrap().value,
-      );
+      const delta: u128 = callerPayment - callerCost;
+      if (delta > u128.fromU64(u64.MAX_VALUE)) {
+        throw new Error('Overflow');
+      }
+      transferCoins(Context.caller(), delta.toU64());
     }
   } else {
-    const delta: u128 = callerCostNeg - callerCostPos;
+    // caller needs to be paid
+    const delta: u128 = callerCostNeg - callerCostPos + callerPayment;
     if (delta > u128.fromU64(u64.MAX_VALUE)) {
       throw new Error('Overflow');
     }
-
-    // caller needs to be paid
-    transferCoins(
-      Context.caller(),
-      (u64ToMAS(delta.toU64()) + callerPayment).unwrap().value,
-    );
+    transferCoins(Context.caller(), delta.toU64());
   }
 }
 
@@ -248,7 +87,7 @@ function consolidatePayment(
  */
 export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   // get the initial balance of the smart contract
-  const initialSCBalance = u64ToMAS(balance());
+  const initialSCBalance = balance();
 
   // deserialize object
   const vInfo = new VestingSessionInfo(args);
@@ -260,23 +99,18 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   Storage.set(getVestingInfoKey(vInfo.toAddr, sessionId), args);
 
   // initialize the claimed coin counter
+  const intiialCounterValue: u64 = 0;
   Storage.set(
     getClaimedAmountKey(vInfo.toAddr, sessionId),
-    new Args().add(u64ToMAS(0)).serialize(),
+    new Args().add(intiialCounterValue).serialize(),
   );
 
   // consolidate payment
   // `total_amount` is expected to be received by the SC as call coins
-  consolidatePayment(
-    initialSCBalance,
-    u64ToMAS(0),
-    u64ToMAS(0),
-    u64ToMAS(0),
-    vInfo.totalAmount,
-  );
+  consolidatePayment(initialSCBalance, 0, 0, 0, vInfo.totalAmount);
 
   // return session ID
-  return u64ToBytes(sessionId);
+  return new Args().add(sessionId).serialize();
 }
 
 /**
@@ -286,14 +120,12 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
  */
 export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   // get the initial balance of the smart contract
-  const initialSCBalance = u64ToMAS(balance());
+  const initialSCBalance = balance();
 
   // deserialize arguments
   let deser = new Args(args);
   const sessionId = deser.nextU64().expect('Missing session_id argument.');
-  const amount: Amount = deser
-    .nextSerializable<Amount>()
-    .expect('Missing amount argument.');
+  const amount = deser.nextU64().expect('Missing amount argument.');
   if (deser.offset !== args.length) {
     throw new Error('Extra data in buffer.');
   }
@@ -307,14 +139,12 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
     Storage.get(getVestingInfoKey(addr, sessionId)),
   );
   const claimedAmountKey = getClaimedAmountKey(addr, sessionId);
-  const claimedAmount: Amount = new Args(Storage.get(claimedAmountKey))
-    .nextSerializable<Amount>()
-    .expect('Missing claimed_amount.');
+  const claimedAmount = new Args(Storage.get(claimedAmountKey))
+    .nextU64()
+    .unwrap();
 
   // compute the claimable amount of coins
-  const claimableAmount = (
-    vestingInfo.getUnlockedAt(timestamp) - claimedAmount
-  ).unwrap();
+  const claimableAmount = vestingInfo.getUnlockedAt(timestamp) - claimedAmount;
 
   // check amount
   if (amount > claimableAmount) {
@@ -324,20 +154,14 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   // update the claimed amount
   Storage.set(
     claimedAmountKey,
-    new Args().add((claimedAmount + amount).unwrap()).serialize(),
+    new Args().add(claimedAmount + amount).serialize(),
   );
 
   // transfer the coins to the claimer
-  transferCoins(addr, amount.value);
+  transferCoins(addr, amount);
 
   // consolidate payment
-  consolidatePayment(
-    initialSCBalance,
-    u64ToMAS(0),
-    amount,
-    u64ToMAS(0),
-    u64ToMAS(0),
-  );
+  consolidatePayment(initialSCBalance, 0, amount, 0, 0);
 
   return [];
 }
@@ -349,7 +173,7 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
  */
 export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   // get the initial balance of the smart contract
-  const initialSCBalance = u64ToMAS(balance());
+  const initialSCBalance = balance();
 
   // deserialize arguments
   let deser = new Args(args);
@@ -363,9 +187,9 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   const vestingInfoKey = getVestingInfoKey(addr, sessionId);
   const vestingInfo = new VestingSessionInfo(Storage.get(vestingInfoKey));
   const claimedAmountKey = getClaimedAmountKey(addr, sessionId);
-  const claimedAmount: Amount = new Args(Storage.get(claimedAmountKey))
-    .nextSerializable<Amount>()
-    .expect('Missing claimed_amount.');
+  const claimedAmount = new Args(Storage.get(claimedAmountKey))
+    .nextU64()
+    .unwrap();
 
   // check that everything was claimed
   if (claimedAmount < vestingInfo.totalAmount) {
@@ -377,13 +201,7 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   Storage.del(claimedAmountKey);
 
   // consolidate payment
-  consolidatePayment(
-    initialSCBalance,
-    u64ToMAS(0),
-    u64ToMAS(0),
-    u64ToMAS(0),
-    u64ToMAS(0),
-  );
+  consolidatePayment(initialSCBalance, 0, 0, 0, 0);
 
   return [];
 }
