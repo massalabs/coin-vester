@@ -20,6 +20,12 @@ if (!secretKey) {
   throw new Error('Missing WALLET_SECRET_KEY in .env file');
 }
 
+const chainId_ = process.env.CHAIN_ID;
+if (!chainId_) {
+  throw new Error('Missing CHAIN_ID in .env file');
+}
+const chainId = BigInt(chainId_);
+
 // Create an account using the private key
 const deployerAccount = await WalletClient.getAccountFromSecretKey(secretKey);
 
@@ -49,6 +55,7 @@ const __dirname = path.dirname(path.dirname(__filename));
       } as ISCData,
       // Additional smart contracts can be added here for deployment
     ],
+    chainId,
     0n, // fees for deployment
     MAX_GAS_DEPLOYMENT, // max gas for deployment
     true, // if true, waits for the first event before returning
