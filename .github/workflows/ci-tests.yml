@@ -12,7 +12,9 @@ jobs:
           cache: 'npm'
 
       - name: Install
+        working-directory: smart-contract
         run: npm ci
 
       - name: Test
+        working-directory: smart-contract
         run: npm run test
