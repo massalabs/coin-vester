@@ -12,7 +12,7 @@ import { u128 } from 'as-bignum/assembly';
 import {
   createUniqueId,
   getVestingInfoKey,
-  getClaimedAmountKey,
+  getClaimedAmountKey, refund,
 } from './utils';
 import { VestingSessionInfo } from './vesting';
 
@@ -106,8 +106,16 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   );
 
   // consolidate payment
-  // `total_amount` is expected to be received by the SC as call coins
-  consolidatePayment(initialSCBalance, 0, 0, 0, vInfo.totalAmount);
+
+  let transferredCoins = Context.transferredCoins();
+
+  if (transferredCoins > 0) {
+    // `total_amount` is expected to be received by the SC as call coins
+    consolidatePayment(initialSCBalance, 0, 0, 0, vInfo.totalAmount);
+  } else {
+    // read only call - used to estimate gas & storage cost
+    refund(initialSCBalance);
+  }
 
   // return session ID
   return new Args().add(sessionId).serialize();
@@ -161,7 +169,14 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   transferCoins(addr, amount);
 
   // consolidate payment
-  consolidatePayment(initialSCBalance, 0, amount, 0, 0);
+  let transferredCoins = Context.transferredCoins();
+
+  if (transferredCoins > 0) {
+    consolidatePayment(initialSCBalance, 0, amount, 0, 0);
+  } else {
+    // read only call - used to estimate gas & storage cost
+    refund(initialSCBalance);
+  }
 
   return [];
 }
@@ -201,7 +216,14 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   Storage.del(claimedAmountKey);
 
   // consolidate payment
-  consolidatePayment(initialSCBalance, 0, 0, 0, 0);
+  let transferredCoins = Context.transferredCoins();
+
+  if (transferredCoins > 0) {
+    consolidatePayment(initialSCBalance, 0, 0, 0, 0);
+  } else {
+    // read only call - used to estimate gas & storage cost
+    refund(initialSCBalance);
+  }
 
   return [];
 }

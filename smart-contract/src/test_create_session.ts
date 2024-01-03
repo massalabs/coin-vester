@@ -43,27 +43,28 @@ const __dirname = path.dirname(path.dirname(__filename));
 console.log("Account ready...");
 
 let client = await ClientFactory.createDefaultClient(
-    "http://127.0.0.1:33035/api/v2" as DefaultProviderUrls,
-    BigInt(77),
+    publicApi as DefaultProviderUrls,
+    chainId,
     false,
     deployerAccount,
 );
 
 console.log("Client ready...");
 
-let sc_addr = "AS1VtQNYyHacsykHtCVP9CeYPB4oE4QmPvetfqqn9hb1PMLeNbmN";
+// let sc_addr = "AS1VtQNYyHacsykHtCVP9CeYPB4oE4QmPvetfqqn9hb1PMLeNbmN";
+let sc_addr = "AS121ASK3ZSfi79dQcT6wBp8nzo49xEXXd7BnNGJRaCfRoZSVTHAL";
 
 console.log("Creating a Vesting session...");
 
 // Placeholder function for send logic
 let serialized_arg = new Args();
 let sendToAddr = "AU16pM2bgEvcQe2ZN3VbQNwErjvZ8v75QgsPrEDwSX8Rrf1wcTkm";
-let sendTotalAmount = BigInt(200);
+let sendTotalAmount = BigInt(201);
 let sendStartTimestamp = BigInt(Date.now());
 let sendInitialReleaseAmount = BigInt(50);
 let sendCliffDuration = BigInt(1000);
 let sendLinearDuration = BigInt(1000);
-let sendTag = "testw3 t2";
+let sendTag = "testw3 t5";
 
 serialized_arg.addString(sendToAddr);
 serialized_arg.addU64(sendTotalAmount);
@@ -74,14 +75,29 @@ serialized_arg.addU64(sendLinearDuration);
 serialized_arg.addString(sendTag);
 let serialized = serialized_arg.serialize();
 
-let storage_fees = BigInt(99000000); // TODO calculate storage fees
+// Estimate gas cost & storage cost
+
+let [gas_cost, storage_cost] = await getDynamicCosts(
+    client,
+    sc_addr,
+    "createVestingSession",
+    serialized
+);
+
+console.log("e gas_cost", gas_cost);
+console.log("e storage_cost", storage_cost);
+
+// End Estimate
+
+
+// let storage_fees = BigInt(99000000); // TODO calculate storage fees
 
 let op = await client.smartContracts().callSmartContract({
     targetAddress: sc_addr,
     functionName: "createVestingSession",
     parameter: serialized,
-    maxGas: BigInt(1000000000),  //TODO estimate gas
-    coins: sendTotalAmount + storage_fees,
+    maxGas: gas_cost,  // BigInt(1000000000),  //TODO estimate gas
+    coins: sendTotalAmount + BigInt(storage_cost), // sendTotalAmount + storage_fees,
     fee: BigInt(0),   //TODO calculate fee
 });
 
@@ -124,4 +140,45 @@ async function awaitOperationFinalization(
         console.error(msg);
         throw new Error(msg);
     }
+}
+
+export async function getDynamicCosts(
+    client: Client,
+    targetAddress: string,
+    targetFunction: string,
+    parameter: number[],
+): Promise<[bigint, number]> {
+
+    const MAX_GAS = 4294167295; // Max gas for an op on Massa blockchain
+    const gas_margin = 1.2;
+    let estimatedGas: bigint = BigInt(MAX_GAS);
+    const prefix = "Estimated storage cost: ";
+    let estimatedStorageCost: number = 0;
+    const storage_cost_margin = 1.1;
+
+    try {
+        const readOnlyCall = await client.smartContracts().readSmartContract({
+            targetAddress: targetAddress,
+            targetFunction: targetFunction,
+            parameter,
+            maxGas: BigInt(MAX_GAS),
+        });
+        // console.log("readOnlyCall:", readOnlyCall);
+        // console.log("events", readOnlyCall.info.output_events);
+        // console.log("===");
+
+        estimatedGas = BigInt(Math.min(Math.floor(readOnlyCall.info.gas_cost * gas_margin), MAX_GAS));
+        let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
+        // console.log("filteredEvents:", filteredEvents);
+        estimatedStorageCost = Math.floor(
+            parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
+        );
+
+    } catch (err) {
+        console.log(
+            `Failed to get dynamic gas cost for ${targetFunction} at ${targetAddress}. Using fallback value `,
+            err,
+        );
+    }
+    return [estimatedGas, estimatedStorageCost];
 }
