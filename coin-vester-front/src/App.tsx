@@ -3,11 +3,13 @@ import {
   ClientFactory,
   Args,
   Address,
-  IClient
+  Client,
+  IClient,
+  fromMAS
 } from "@massalabs/massa-web3";
 import { IAccount, providers } from "@massalabs/wallet-provider";
 
-const sc_addr = "AS1Jz3rzRBPhyBKgJSpiR4z9M6nPgYNmQezpCWE3Bet9r7rb9UvK";
+const sc_addr = "AS1ZHWWPdnVLY1W5ohDrfXxMa9zETosPnMmuC1Bj2QaxU49VfVe3";
 
 type vestingInfoType = {
   toAddr: Address,
@@ -72,7 +74,9 @@ function Content() {
             if (!account || !massastationProvider) {
                 return;
             }
+
             setClient(await ClientFactory.fromWalletProvider(massastationProvider, account));
+
         } catch (e) {
             console.log("Please install Massa Station and the wallet plugin of Massa Labs and refresh.");
         }
@@ -95,7 +99,7 @@ function Content() {
         let user_addresses = [
           new Address(account.address())
         ];
-        
+
         // get all the vesting sessions of the user
         let addrInfo = await client
           .publicApi()
@@ -107,14 +111,25 @@ function Content() {
         
         // find the keys
         for (let i = 0; i < allKeys.length; i++) {
+
           let key = allKeys[i];
+
           let deser = new Args(key);
           let keyTag = Number(deser.nextU8());
+
+          if (keyTag !== 0x02 && keyTag !== 0x03) {
+            // only interested in VestingInfoKey & ClaimedAmountKey
+            continue;
+          }
+
           let keyAddress = new Address(deser.nextString());
           let keySessionId = deser.nextU64();
 
           // check that the address is in user_addresses, otherwise skip
-          if (!user_addresses.includes(keyAddress)) {
+          // Note: use filter here as there is no eq operator implemented for Address
+          let user_addresses_filter = user_addresses.filter((addr) => {
+            return addr.base58Encode == keyAddress.base58Encode; });
+          if (user_addresses_filter.length === 0) {
             continue;
           }
 
@@ -152,16 +167,31 @@ function Content() {
         let res = await client
           .publicApi()
           .getDatastoreEntries(queryKeys);
+
+        if (res.length !== queryKeys.length) {
+          throw new Error("Error: datastore entries length invalid");
+        }
+
         let now = Date.now();
         for (let i = 0; i < queryKeys.length; i+=2) {
           let vestingInfoSerialized = res[i]!.candidate_value;
           let claimedAmountSerialized = res[i+1]!.candidate_value;
+
           if(vestingInfoSerialized === null || claimedAmountSerialized === null) {
             // throw error
             throw new Error("Error: datastore entry not found");
           }
+
+          if (vestingInfoSerialized?.length == 0 || claimedAmountSerialized?.length === 0)
+          {
+            // Note: sometimes we got empty Uint8Array
+            // This prevents an error in our app
+            continue;
+          }
+
           // deserialize the vesting info
           let deser = new Args(vestingInfoSerialized);
+
           let vestingInfo = {
             toAddr: new Address(deser.nextString()),
             totalAmount: deser.nextU64(),
@@ -171,6 +201,7 @@ function Content() {
             linearDuration: deser.nextU64(),
             tag: deser.nextString(),
           };
+
           // deserialize the claimed amount
           deser = new Args(claimedAmountSerialized);
           let claimedAmount = deser.nextU64();
@@ -236,33 +267,45 @@ function Content() {
     serialized_arg.addU64(claimAmount);
     let serialized = serialized_arg.serialize();
 
-    await client.smartContracts().callSmartContract({
+    // Note: we use a fixed storage cost in order to minimize code
+    let gas_cost = BigInt(2550000);
+    let storage_cost_fees = fromMAS(2);
+    let op_fee = BigInt(1);
+
+    let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
         functionName: "claimVestingSession",
         parameter: serialized,
-        maxGas: BigInt(1000000000),  //TODO estimate gas
-        coins: BigInt(0),
-        fee: BigInt(0),   //TODO calculate fee
+        maxGas: gas_cost,
+        coins: storage_cost_fees,
+        fee: op_fee
     });
-    console.log("CLAIM SUCCESSFUL");
+    console.log("CLAIM SUCCESSFUL", op);
   };
 
   const handleDelete = async (index: number, client: IClient) => {
     // Placeholder function for delete logic
 
+    // console.log("Deleting vesting session id:", vestingSessions[index].id);
+
     let serialized_arg = new Args();
     serialized_arg.addU64(vestingSessions[index].id);
     let serialized = serialized_arg.serialize();
 
-    await client.smartContracts().callSmartContract({
+    // Note: we use a fixed storage cost in order to minimize code
+    let gas_cost = BigInt(2550000);
+    let storage_cost_fees = fromMAS(0);
+    let op_fee = BigInt(1);
+
+    let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
         functionName: "clearVestingSession",
         parameter: serialized,
-        maxGas: BigInt(1000000000),  //TODO estimate gas
-        coins: BigInt(0),
-        fee: BigInt(0),   //TODO calculate fee
+        maxGas: gas_cost,
+        coins: storage_cost_fees,
+        fee: op_fee
     });
-    console.log("DELETE SUCCESSFUL");
+    console.log("DELETE SUCCESSFUL", op);
   };
 
   const handleSend = async (client: IClient) => {
@@ -276,18 +319,21 @@ function Content() {
     serialized_arg.addU64(sendLinearDuration);
     serialized_arg.addString(sendTag);
     let serialized = serialized_arg.serialize();
-    
-    let storage_fees = BigInt(1000000); // TODO calculate storage fees
 
-    await client.smartContracts().callSmartContract({
+    // Note: we use a fixed storage cost in order to minimize code
+    let gas_cost = BigInt(2550000);
+    let storage_cost_fees = fromMAS(2);
+    let op_fee = BigInt(1);
+
+    let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
         functionName: "createVestingSession",
         parameter: serialized,
-        maxGas: BigInt(1000000000),  //TODO estimate gas
-        coins: sendTotalAmount + storage_fees,
-        fee: BigInt(0),   //TODO calculate fee
+        maxGas: gas_cost,
+        coins: sendTotalAmount + BigInt(storage_cost_fees),
+        fee: op_fee
     });
-    console.log("SEND SUCCESSFUL");
+    console.log("SEND SUCCESSFUL", op);
   }
 
 

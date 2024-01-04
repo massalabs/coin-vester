@@ -1,4 +1,4 @@
-import { Address, Storage } from '@massalabs/massa-as-sdk';
+import {Address, Storage} from '@massalabs/massa-as-sdk';
 import { Args } from '@massalabs/as-types';
 
 /**
@@ -52,3 +52,4 @@ export function getClaimedAmountKey(
   const prefix: u8 = 0x03;
   return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
+
