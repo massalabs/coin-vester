@@ -7,7 +7,6 @@ import {
   IClient, DefaultProviderUrls, WalletClient, fromMAS
 } from "@massalabs/massa-web3";
 import { IAccount, providers } from "@massalabs/wallet-provider";
-// import { IAccount } from "@massalabs/massa-web3";
 
 const sc_addr = "AS1ZHWWPdnVLY1W5ohDrfXxMa9zETosPnMmuC1Bj2QaxU49VfVe3";
 
@@ -94,7 +93,6 @@ function Content() {
   useEffect(() => {
     async function registerAndSetProvider() {
         try {
-
             const allProviders = await providers(true, 10000);
 
             if (!allProviders || allProviders.length === 0) {
@@ -121,28 +119,6 @@ function Content() {
 
             setClient(await ClientFactory.fromWalletProvider(massastationProvider, account));
 
-
-          /*
-          let sk0 = "S1ykLaxXyMnJoaWLYds8UntqKTamZ4vcxrZ1fdToR8WpWEpk3FC";
-          let sk = "S144WUCZBbABavBQxicYrb1yFov9itnLjv19bAoz2VsJNBQKoDz";
-            // setClient(await ClientFactory.fromWalletProvider(massastationProvider, account));
-          const account = await WalletClient.getAccountFromSecretKey(
-              sk
-          );
-          // console.log('Using account: ', account.address);
-          setAccount(await WalletClient.getAccountFromSecretKey(
-              sk
-          ));
-
-          setClient(
-                await ClientFactory.createDefaultClient(
-                    "http://127.0.0.1:33035/api/v2" as DefaultProviderUrls,
-                    BigInt(77),
-                    false,
-                    account,
-                )
-            )
-          */
         } catch (e) {
             console.log("Please install Massa Station and the wallet plugin of Massa Labs and refresh.");
         }
@@ -164,7 +140,6 @@ function Content() {
         // TODO, for now we support only one address
         let user_addresses = [
           new Address(account.address())
-          // new Address(account.address!)
         ];
 
         // get all the vesting sessions of the user
@@ -268,7 +243,6 @@ function Content() {
             linearDuration: deser.nextU64(),
             tag: deser.nextString(),
           };
-          // console.log("vesting info", vestingInfo);
 
           // deserialize the claimed amount
           deser = new Args(claimedAmountSerialized);
