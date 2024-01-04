@@ -5,14 +5,14 @@ export async function getDynamicCosts(
     targetAddress: string,
     targetFunction: string,
     parameter: number[],
-): Promise<[bigint, number]> {
+): Promise<bigint> {
 
     const MAX_GAS = 4294167295; // Max gas for an op on Massa blockchain
     const gas_margin = 1.2;
     let estimatedGas: bigint = BigInt(MAX_GAS);
-    const prefix = "Estimated storage cost: ";
-    let estimatedStorageCost: number = 0;
-    const storage_cost_margin = 1.1;
+    // const prefix = "Estimated storage cost: ";
+    // let estimatedStorageCost: number = 0;
+    // const storage_cost_margin = 1.1;
 
     try {
         const readOnlyCall = await client.smartContracts().readSmartContract({
@@ -26,11 +26,11 @@ export async function getDynamicCosts(
         console.log("===");
 
         estimatedGas = BigInt(Math.min(Math.floor(readOnlyCall.info.gas_cost * gas_margin), MAX_GAS));
-        let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
-        // console.log("filteredEvents:", filteredEvents);
-        estimatedStorageCost = Math.floor(
-            parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
-        );
+        // let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
+        // // console.log("filteredEvents:", filteredEvents);
+        // estimatedStorageCost = Math.floor(
+        //     parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
+        // );
 
     } catch (err) {
         console.log(
@@ -38,5 +38,5 @@ export async function getDynamicCosts(
             err,
         );
     }
-    return [estimatedGas, estimatedStorageCost];
+    return estimatedGas;
 }

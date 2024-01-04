@@ -70,7 +70,7 @@ let sendStartTimestamp = BigInt(Date.now());
 let sendInitialReleaseAmount = BigInt(50);
 let sendCliffDuration = BigInt(1000);
 let sendLinearDuration = BigInt(1000);
-let sendTag = "testw3 t7";
+let sendTag = "testw3 t8";
 
 serialized_arg.addString(sendToAddr);
 serialized_arg.addU64(sendTotalAmount);
@@ -83,7 +83,7 @@ let serialized = serialized_arg.serialize();
 
 // Estimate gas cost & storage cost
 
-let [gas_cost, storage_cost] = await getDynamicCosts(
+let gas_cost = await getDynamicCosts(
     client,
     sc_addr,
     "createVestingSession",
@@ -91,20 +91,21 @@ let [gas_cost, storage_cost] = await getDynamicCosts(
 );
 
 console.log("e gas_cost", gas_cost);
-console.log("e storage_cost", storage_cost);
+// console.log("e storage_cost", storage_cost);
 
 // End Estimate
 
-
-// let storage_fees = BigInt(99000000); // TODO calculate storage fees
+// Note: we use a fixed storage cost in order to minimize code
+let storage_cost_fees = fromMAS(2);
+let op_fee = BigInt(1);
 
 let op = await client.smartContracts().callSmartContract({
     targetAddress: sc_addr,
     functionName: "createVestingSession",
     parameter: serialized,
-    maxGas: gas_cost,  // BigInt(1000000000),  //TODO estimate gas
-    coins: sendTotalAmount + BigInt(storage_cost), // sendTotalAmount + storage_fees,
-    fee: BigInt(0),   //TODO calculate fee
+    maxGas: gas_cost,
+    coins: sendTotalAmount + BigInt(storage_cost_fees),
+    fee: op_fee
 });
 
 console.log("Done creating a Vesting session:", op);

@@ -106,15 +106,10 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   );
 
   // consolidate payment
-
   let transferredCoins = Context.transferredCoins();
-
   if (transferredCoins > 0) {
-    // `total_amount` is expected to be received by the SC as call coins
+    // Note: Do not call consolidatePayment when read SC (used for gas estimation) as we cannot transfer coins
     consolidatePayment(initialSCBalance, 0, 0, 0, vInfo.totalAmount);
-  } else {
-    // read only call - used to estimate gas & storage cost
-    refund(initialSCBalance);
   }
 
   // return session ID
@@ -170,12 +165,9 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
 
   // consolidate payment
   let transferredCoins = Context.transferredCoins();
-
   if (transferredCoins > 0) {
+    // Note: Do not call consolidatePayment when read SC (used for gas estimation) as we cannot transfer coins
     consolidatePayment(initialSCBalance, 0, amount, 0, 0);
-  } else {
-    // read only call - used to estimate gas & storage cost
-    refund(initialSCBalance);
   }
 
   return [];
@@ -217,12 +209,9 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
 
   // consolidate payment
   let transferredCoins = Context.transferredCoins();
-
   if (transferredCoins > 0) {
+    // Note: Do not call consolidatePayment when read SC (used for gas estimation) as we cannot transfer coins
     consolidatePayment(initialSCBalance, 0, 0, 0, 0);
-  } else {
-    // read only call - used to estimate gas & storage cost
-    refund(initialSCBalance);
   }
 
   return [];

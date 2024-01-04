@@ -4,12 +4,12 @@ import {
   Args,
   Address,
   Client,
-  IClient, DefaultProviderUrls, WalletClient
+  IClient, DefaultProviderUrls, WalletClient, fromMAS
 } from "@massalabs/massa-web3";
 import { IAccount, providers } from "@massalabs/wallet-provider";
 // import { IAccount } from "@massalabs/massa-web3";
 
-const sc_addr = "AS1yzhhRm9R6tCJaWiX1vjBtqYTyP5RtgrTHz3tfY33fa5NseJFp";
+const sc_addr = "AS1mcT4zA5z5Mou2qysHsDuLp3yn7Jda3QzwKDdZiMwLo66npV3p";
 
 type vestingInfoType = {
   toAddr: Address,
@@ -36,14 +36,15 @@ export async function getDynamicCosts(
     targetAddress: string,
     targetFunction: string,
     parameter: number[],
-): Promise<[bigint, number]> {
+// ): Promise<[bigint, number]> {
+): Promise<bigint> {
 
   const MAX_GAS = 4294167295; // Max gas for an op on Massa blockchain
   const gas_margin = 1.2;
   let estimatedGas: bigint = BigInt(MAX_GAS);
-  const prefix = "Estimated storage cost: ";
-  let estimatedStorageCost: number = 0;
-  const storage_cost_margin = 1.1;
+  // const prefix = "Estimated storage cost: ";
+  // let estimatedStorageCost: number = 0;
+  // const storage_cost_margin = 1.1;
 
   try {
     const readOnlyCall = await client.smartContracts().readSmartContract({
@@ -57,11 +58,11 @@ export async function getDynamicCosts(
     // console.log("===");
 
     estimatedGas = BigInt(Math.min(Math.floor(readOnlyCall.info.gas_cost * gas_margin), MAX_GAS));
-    let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
+    // let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
     // console.log("filteredEvents:", filteredEvents);
-    estimatedStorageCost = Math.floor(
-        parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
-    );
+    // estimatedStorageCost = Math.floor(
+    //     parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
+    // );
 
   } catch (err) {
     console.log(
@@ -69,7 +70,8 @@ export async function getDynamicCosts(
         err,
     );
   }
-  return [estimatedGas, estimatedStorageCost];
+  // return [estimatedGas, estimatedStorageCost];
+  return estimatedGas;
 }
 
 function Content() {
@@ -92,7 +94,6 @@ function Content() {
   useEffect(() => {
     async function registerAndSetProvider() {
         try {
-
             const allProviders = await providers(true, 10000);
 
             if (!allProviders || allProviders.length === 0) {
@@ -118,7 +119,6 @@ function Content() {
             }
 
             setClient(await ClientFactory.fromWalletProvider(massastationProvider, account));
-
           /*
           let sk0 = "S1ykLaxXyMnJoaWLYds8UntqKTamZ4vcxrZ1fdToR8WpWEpk3FC";
           let sk = "S144WUCZBbABavBQxicYrb1yFov9itnLjv19bAoz2VsJNBQKoDz";
@@ -333,23 +333,26 @@ function Content() {
     let serialized = serialized_arg.serialize();
 
     // Estimation
-    let [gas_cost, storage_cost] = await getDynamicCosts(
+    let gas_cost = await getDynamicCosts(
         client as Client,
         sc_addr,
         "claimVestingSession",
         serialized
     );
     // console.log("Estimated gas_cost", gas_cost);
-    // console.log("Estimated storage_cost", storage_cost);
     // End Estimation
+
+    // Note: we use a fixed storage cost in order to minimize code
+    let storage_cost_fees = fromMAS(2);
+    let op_fee = BigInt(1);
 
     let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
         functionName: "claimVestingSession",
         parameter: serialized,
-        maxGas: gas_cost, // BigInt(1000000000),  //TODO estimate gas
-        coins: BigInt(storage_cost),  // BigInt(1),
-        fee: BigInt(10),   //TODO calculate fee
+        maxGas: gas_cost,
+        coins: storage_cost_fees,
+        fee: op_fee
     });
     console.log("CLAIM SUCCESSFUL", op);
   };
@@ -364,7 +367,7 @@ function Content() {
     let serialized = serialized_arg.serialize();
 
     // Estimation
-    let [gas_cost, storage_cost] = await getDynamicCosts(
+    let gas_cost = await getDynamicCosts(
         client as Client,
         sc_addr,
         "clearVestingSession",
@@ -374,13 +377,17 @@ function Content() {
     // console.log("Estimated storage_cost", storage_cost);
     // End Estimation
 
+    // Note: we use a fixed storage cost in order to minimize code
+    let storage_cost_fees = fromMAS(0);
+    let op_fee = BigInt(1);
+
     let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
         functionName: "clearVestingSession",
         parameter: serialized,
-        maxGas: gas_cost, // BigInt(1000000000),  //TODO estimate gas
-        coins: BigInt(storage_cost), // BigInt(0),
-        fee: BigInt(0),   //TODO calculate fee
+        maxGas: gas_cost,
+        coins: storage_cost_fees,
+        fee: op_fee
     });
     console.log("DELETE SUCCESSFUL", op);
   };
@@ -399,7 +406,7 @@ function Content() {
 
     // Estimation
 
-    let [gas_cost, storage_cost] = await getDynamicCosts(
+    let gas_cost = await getDynamicCosts(
         client as Client,
         sc_addr,
         "createVestingSession",
@@ -408,15 +415,17 @@ function Content() {
 
     // End Estimation
 
-    let storage_fees = BigInt(1000000); // TODO calculate storage fees
+    // Note: we use a fixed storage cost in order to minimize code
+    let storage_cost_fees = fromMAS(2);
+    let op_fee = BigInt(1);
 
     let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
         functionName: "createVestingSession",
         parameter: serialized,
-        maxGas: gas_cost, // BigInt(1000000000),  //TODO estimate gas
-        coins: sendTotalAmount + BigInt(storage_cost), // sendTotalAmount + storage_fees,
-        fee: BigInt(0),   //TODO calculate fee
+        maxGas: gas_cost,
+        coins: sendTotalAmount + BigInt(storage_cost_fees),
+        fee: op_fee
     });
     console.log("SEND SUCCESSFUL", op);
   }
