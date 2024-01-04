@@ -4,7 +4,8 @@ import {
   Args,
   Address,
   Client,
-  IClient, DefaultProviderUrls, WalletClient, fromMAS
+  IClient,
+  fromMAS
 } from "@massalabs/massa-web3";
 import { IAccount, providers } from "@massalabs/wallet-provider";
 
@@ -29,49 +30,6 @@ type vestingSessionType = {
   claimedAmount: bigint,
   availableAmount: bigint,
 };
-
-export async function getDynamicCosts(
-    client: Client,
-    targetAddress: string,
-    targetFunction: string,
-    parameter: number[],
-// ): Promise<[bigint, number]> {
-): Promise<bigint> {
-
-  const MAX_GAS = 4294167295; // Max gas for an op on Massa blockchain
-  const gas_margin = 1.2;
-  let estimatedGas: bigint = BigInt(MAX_GAS);
-  // const prefix = "Estimated storage cost: ";
-  // let estimatedStorageCost: number = 0;
-  // const storage_cost_margin = 1.1;
-
-  try {
-    const readOnlyCall = await client.smartContracts().readSmartContract({
-      targetAddress: targetAddress,
-      targetFunction: targetFunction,
-      parameter,
-      maxGas: BigInt(MAX_GAS),
-    });
-    // console.log("readOnlyCall:", readOnlyCall);
-    // console.log("events", readOnlyCall.info.output_events);
-    // console.log("===");
-
-    estimatedGas = BigInt(Math.min(Math.floor(readOnlyCall.info.gas_cost * gas_margin), MAX_GAS));
-    // let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
-    // console.log("filteredEvents:", filteredEvents);
-    // estimatedStorageCost = Math.floor(
-    //     parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
-    // );
-
-  } catch (err) {
-    console.log(
-        `Failed to get dynamic gas cost for ${targetFunction} at ${targetAddress}. Using fallback value `,
-        err,
-    );
-  }
-  // return [estimatedGas, estimatedStorageCost];
-  return estimatedGas;
-}
 
 function Content() {
   const [account, setAccount] = useState<IAccount | null>(null);
@@ -309,18 +267,6 @@ function Content() {
     serialized_arg.addU64(claimAmount);
     let serialized = serialized_arg.serialize();
 
-    // Estimation - waiting for ReadSC + coins
-    /*
-    let gas_cost = await getDynamicCosts(
-        client as Client,
-        sc_addr,
-        "claimVestingSession",
-        serialized
-    );
-    console.log("Estimated gas_cost", gas_cost);
-    */
-    // End Estimation
-
     // Note: we use a fixed storage cost in order to minimize code
     let gas_cost = BigInt(2550000);
     let storage_cost_fees = fromMAS(2);
@@ -345,19 +291,6 @@ function Content() {
     let serialized_arg = new Args();
     serialized_arg.addU64(vestingSessions[index].id);
     let serialized = serialized_arg.serialize();
-
-    // Estimation - waiting for ReadSC + coins
-    /*
-    let gas_cost = await getDynamicCosts(
-        client as Client,
-        sc_addr,
-        "clearVestingSession",
-        serialized
-    );
-    console.log("Estimated gas_cost", gas_cost);
-    */
-    // console.log("Estimated storage_cost", storage_cost);
-    // End Estimation
 
     // Note: we use a fixed storage cost in order to minimize code
     let gas_cost = BigInt(2550000);
@@ -386,19 +319,6 @@ function Content() {
     serialized_arg.addU64(sendLinearDuration);
     serialized_arg.addString(sendTag);
     let serialized = serialized_arg.serialize();
-
-    // Estimation - waiting for ReadSC + coins
-    /*
-    let gas_cost = await getDynamicCosts(
-        client as Client,
-        sc_addr,
-        "createVestingSession",
-        serialized
-    );
-
-    console.log("Estimated gas_cost", gas_cost);
-    */
-    // End Estimation
 
     // Note: we use a fixed storage cost in order to minimize code
     let gas_cost = BigInt(2550000);
