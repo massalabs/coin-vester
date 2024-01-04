@@ -11,6 +11,7 @@ import {
     fromMAS,
     MAX_GAS_DEPLOYMENT
 } from '@massalabs/massa-web3';
+import {getDynamicCosts} from "./utils";
 
 // Load .env file content into process.env
 dotenv.config();
@@ -33,6 +34,11 @@ if (!chainId_) {
 }
 const chainId = BigInt(chainId_);
 
+const sc_addr = process.env.SC_ADDR;
+if (!sc_addr) {
+    throw new Error('Missing SC_ADDR in .env file');
+}
+
 // Create an account using the private key
 const deployerAccount = await WalletClient.getAccountFromSecretKey(secretKey);
 
@@ -52,19 +58,19 @@ let client = await ClientFactory.createDefaultClient(
 console.log("Client ready...");
 
 // let sc_addr = "AS1VtQNYyHacsykHtCVP9CeYPB4oE4QmPvetfqqn9hb1PMLeNbmN";
-let sc_addr = "AS121ASK3ZSfi79dQcT6wBp8nzo49xEXXd7BnNGJRaCfRoZSVTHAL";
+// let sc_addr = "AS12tx6aLtn6GWVB9i9NRzD5GEkUezbKQYsxvdmUaKqVgNgo6sZ2f";
 
 console.log("Creating a Vesting session...");
 
 // Placeholder function for send logic
 let serialized_arg = new Args();
 let sendToAddr = "AU16pM2bgEvcQe2ZN3VbQNwErjvZ8v75QgsPrEDwSX8Rrf1wcTkm";
-let sendTotalAmount = BigInt(201);
+let sendTotalAmount = BigInt(198);
 let sendStartTimestamp = BigInt(Date.now());
 let sendInitialReleaseAmount = BigInt(50);
 let sendCliffDuration = BigInt(1000);
 let sendLinearDuration = BigInt(1000);
-let sendTag = "testw3 t5";
+let sendTag = "testw3 t7";
 
 serialized_arg.addString(sendToAddr);
 serialized_arg.addU64(sendTotalAmount);
@@ -140,45 +146,4 @@ async function awaitOperationFinalization(
         console.error(msg);
         throw new Error(msg);
     }
-}
-
-export async function getDynamicCosts(
-    client: Client,
-    targetAddress: string,
-    targetFunction: string,
-    parameter: number[],
-): Promise<[bigint, number]> {
-
-    const MAX_GAS = 4294167295; // Max gas for an op on Massa blockchain
-    const gas_margin = 1.2;
-    let estimatedGas: bigint = BigInt(MAX_GAS);
-    const prefix = "Estimated storage cost: ";
-    let estimatedStorageCost: number = 0;
-    const storage_cost_margin = 1.1;
-
-    try {
-        const readOnlyCall = await client.smartContracts().readSmartContract({
-            targetAddress: targetAddress,
-            targetFunction: targetFunction,
-            parameter,
-            maxGas: BigInt(MAX_GAS),
-        });
-        // console.log("readOnlyCall:", readOnlyCall);
-        // console.log("events", readOnlyCall.info.output_events);
-        // console.log("===");
-
-        estimatedGas = BigInt(Math.min(Math.floor(readOnlyCall.info.gas_cost * gas_margin), MAX_GAS));
-        let filteredEvents = readOnlyCall.info.output_events.filter((e) => e.data.includes(prefix));
-        // console.log("filteredEvents:", filteredEvents);
-        estimatedStorageCost = Math.floor(
-            parseInt( filteredEvents[0].data.slice(prefix.length) , 10) * storage_cost_margin
-        );
-
-    } catch (err) {
-        console.log(
-            `Failed to get dynamic gas cost for ${targetFunction} at ${targetAddress}. Using fallback value `,
-            err,
-        );
-    }
-    return [estimatedGas, estimatedStorageCost];
 }

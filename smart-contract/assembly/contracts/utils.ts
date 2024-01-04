@@ -59,8 +59,18 @@ export function refund(initialBalance: u64): void {
   const newBalance: u64 = balance();
   // generateEvent(`newBalance: ${newBalance}`);
   // Should never assert (or something is seriously wrong in the blockchain)
-  assert(initialBalance >= newBalance, "Runtime error");
-  let balanceDelta: u64 = initialBalance - newBalance;
+  // assert(initialBalance >= newBalance, "Runtime error");
+  /*
+  if (initialBalance <= newBalance) {
+    // No Storage modification or some Storage have been deleted
+    generateEvent(`Estimated storage cost: 0`);
+    return;
+  }
+  */
+
+  // Set balanceDelta to 0 (No Storage modification or Storage deletion) so:
+  // transferredCoins could be refund (call sc) or estimated storage cost == 0 (read sc)
+  let balanceDelta: u64 = initialBalance > newBalance ? initialBalance - newBalance: 0;
   // generateEvent(`balanceDelta: ${balanceDelta}`);
 
   let transferredCoins = Context.transferredCoins();

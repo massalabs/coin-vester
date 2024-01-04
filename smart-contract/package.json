@@ -9,6 +9,7 @@
         "clean": "rimraf build",
         "deploy": "tsx src/deploy.ts",
         "test_create_session": "tsx src/test_create_session.ts",
+        "test_delete_session": "tsx src/test_delete_session.ts",
         "prettier": "prettier '**/src/**/*.ts' --check && as-prettier --check assembly",
         "prettier:fix": "prettier '**/src/**/*.ts' --write && as-prettier --write assembly",
         "lint": "eslint .",

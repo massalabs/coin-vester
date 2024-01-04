@@ -9,7 +9,7 @@ import {
 import { IAccount, providers } from "@massalabs/wallet-provider";
 // import { IAccount } from "@massalabs/massa-web3";
 
-const sc_addr = "AS121ASK3ZSfi79dQcT6wBp8nzo49xEXXd7BnNGJRaCfRoZSVTHAL";
+const sc_addr = "AS1yzhhRm9R6tCJaWiX1vjBtqYTyP5RtgrTHz3tfY33fa5NseJFp";
 
 type vestingInfoType = {
   toAddr: Address,
@@ -339,6 +339,8 @@ function Content() {
         "claimVestingSession",
         serialized
     );
+    // console.log("Estimated gas_cost", gas_cost);
+    // console.log("Estimated storage_cost", storage_cost);
     // End Estimation
 
     let op = await client.smartContracts().callSmartContract({
@@ -355,6 +357,8 @@ function Content() {
   const handleDelete = async (index: number, client: IClient) => {
     // Placeholder function for delete logic
 
+    // console.log("Deleting vesting session id:", vestingSessions[index].id);
+
     let serialized_arg = new Args();
     serialized_arg.addU64(vestingSessions[index].id);
     let serialized = serialized_arg.serialize();
@@ -366,6 +370,8 @@ function Content() {
         "clearVestingSession",
         serialized
     );
+    // console.log("Estimated gas_cost", gas_cost);
+    // console.log("Estimated storage_cost", storage_cost);
     // End Estimation
 
     let op = await client.smartContracts().callSmartContract({
