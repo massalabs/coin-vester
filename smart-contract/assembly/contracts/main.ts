@@ -39,7 +39,7 @@ function consolidatePayment(
   callerDebit: u64,
 ): void {
   // How much we charge the caller:
-  // caller_cost = initial_sc_balance + internal_sc_credits + caller_debit - internal_sc_debits - get_balance()
+  // caller_cost = initial_sc_balance + internal_sc_credits + caller_debit - internal_sc_debits - caller_credit - get_balance()
   const callerCostPos: u128 =
     u128.fromU64(initialSCBalance) +
     u128.fromU64(internalSCCredits) +
@@ -99,10 +99,10 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   Storage.set(getVestingInfoKey(vInfo.toAddr, sessionId), args);
 
   // initialize the claimed coin counter
-  const intiialCounterValue: u64 = 0;
+  const intialCounterValue: u64 = 0;
   Storage.set(
     getClaimedAmountKey(vInfo.toAddr, sessionId),
-    new Args().add(intiialCounterValue).serialize(),
+    new Args().add(intialCounterValue).serialize(),
   );
 
   // consolidate payment
@@ -135,7 +135,7 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   const sessionId = deser.nextU64().expect('Missing session_id argument.');
   const amount = deser.nextU64().expect('Missing amount argument.');
   if (deser.offset !== args.length) {
-    throw new Error('Extra data in buffer.');
+    throw new Error(`Extra data in serialized args (len: ${args.length}) after session id and amount, aborting...`);
   }
 
   // get current timestamp
@@ -194,7 +194,7 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   let deser = new Args(args);
   const sessionId = deser.nextU64().expect('Missing session_id argument.');
   if (deser.offset !== args.length) {
-    throw new Error('Extra data in buffer.');
+    throw new Error(`Extra data in serialized args (len: ${args.length}) after session id, aborting...`);
   }
 
   // get vesting data
