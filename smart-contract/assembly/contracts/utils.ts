@@ -53,39 +53,3 @@ export function getClaimedAmountKey(
   return new Args().add(prefix).add(toAddr).add(sessionId).serialize();
 }
 
-export function refund(initialBalance: u64): void {
-
-  // generateEvent(`initialBalance: ${initialBalance}`);
-  const newBalance: u64 = balance();
-  // generateEvent(`newBalance: ${newBalance}`);
-  // Should never assert (or something is seriously wrong in the blockchain)
-  // assert(initialBalance >= newBalance, "Runtime error");
-  /*
-  if (initialBalance <= newBalance) {
-    // No Storage modification or some Storage have been deleted
-    generateEvent(`Estimated storage cost: 0`);
-    return;
-  }
-  */
-
-  // Set balanceDelta to 0 (No Storage modification or Storage deletion) so:
-  // transferredCoins could be refund (call sc) or estimated storage cost == 0 (read sc)
-  let balanceDelta: u64 = initialBalance > newBalance ? initialBalance - newBalance: 0;
-  // generateEvent(`balanceDelta: ${balanceDelta}`);
-
-  let transferredCoins = Context.transferredCoins();
-  if (transferredCoins > 0) {
-    // Only refund if caller has transferred too much coins (parameter coins of callSmartContract)
-    let coinsToRefund = transferredCoins > balanceDelta ? transferredCoins - balanceDelta : 0;
-    if (coinsToRefund > 0) {
-      // generateEvent(`[refund] send back ${coinsToRefund} coins`);
-      transferCoins(Context.caller(), coinsToRefund);
-    }
-  } else {
-    // read only call - transferred coins is set to 0
-    // to estimate gas cost & Storage cost
-    // TEMP: need an event to retrieve gas cost
-    let storageCost: u64 = balanceDelta;
-    generateEvent(`Estimated storage cost: ${storageCost}`);
-  }
-}

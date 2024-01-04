@@ -12,7 +12,7 @@ import { u128 } from 'as-bignum/assembly';
 import {
   createUniqueId,
   getVestingInfoKey,
-  getClaimedAmountKey, refund,
+  getClaimedAmountKey,
 } from './utils';
 import { VestingSessionInfo } from './vesting';
 
@@ -106,11 +106,7 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   );
 
   // consolidate payment
-  let transferredCoins = Context.transferredCoins();
-  if (transferredCoins > 0) {
-    // Note: Do not call consolidatePayment when read SC (used for gas estimation) as we cannot transfer coins
-    consolidatePayment(initialSCBalance, 0, 0, 0, vInfo.totalAmount);
-  }
+  consolidatePayment(initialSCBalance, 0, 0, 0, vInfo.totalAmount);
 
   // return session ID
   return new Args().add(sessionId).serialize();
@@ -164,11 +160,7 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   transferCoins(addr, amount);
 
   // consolidate payment
-  let transferredCoins = Context.transferredCoins();
-  if (transferredCoins > 0) {
-    // Note: Do not call consolidatePayment when read SC (used for gas estimation) as we cannot transfer coins
-    consolidatePayment(initialSCBalance, 0, amount, 0, 0);
-  }
+  consolidatePayment(initialSCBalance, 0, amount, 0, 0);
 
   return [];
 }
@@ -208,11 +200,7 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   Storage.del(claimedAmountKey);
 
   // consolidate payment
-  let transferredCoins = Context.transferredCoins();
-  if (transferredCoins > 0) {
-    // Note: Do not call consolidatePayment when read SC (used for gas estimation) as we cannot transfer coins
-    consolidatePayment(initialSCBalance, 0, 0, 0, 0);
-  }
+  consolidatePayment(initialSCBalance, 0, 0, 0, 0);
 
   return [];
 }

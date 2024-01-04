@@ -68,23 +68,29 @@ serialized_arg.addU64(vesting_session_id);
 let serialized = serialized_arg.serialize();
 
 // Estimation
-let [gas_cost, storage_cost] = await getDynamicCosts(
+/*
+let gas_cost = await getDynamicCosts(
     client as Client,
     sc_addr,
     "clearVestingSession",
     serialized
 );
 console.log("Estimated gas_cost", gas_cost);
-console.log("Estimated storage_cost", storage_cost);
+*/
 // End Estimation
+
+// Note: we use a fixed storage cost in order to minimize code
+let gas_cost = BigInt(2550000);
+let storage_cost_fees = fromMAS(0);
+let op_fee = BigInt(1);
 
 let op = await client.smartContracts().callSmartContract({
     targetAddress: sc_addr,
     functionName: "clearVestingSession",
     parameter: serialized,
-    maxGas: gas_cost, // BigInt(1000000000),  //TODO estimate gas
-    coins: BigInt(storage_cost), // BigInt(0),
-    fee: BigInt(0),   //TODO calculate fee
+    maxGas: gas_cost,
+    coins: BigInt(storage_cost_fees),
+    fee: op_fee
 });
 console.log("Deleting op:", op);
 

@@ -82,7 +82,8 @@ serialized_arg.addString(sendTag);
 let serialized = serialized_arg.serialize();
 
 // Estimate gas cost & storage cost
-
+// waiting for ReadSC + coins
+/*
 let gas_cost = await getDynamicCosts(
     client,
     sc_addr,
@@ -91,11 +92,13 @@ let gas_cost = await getDynamicCosts(
 );
 
 console.log("e gas_cost", gas_cost);
+*/
 // console.log("e storage_cost", storage_cost);
 
 // End Estimate
 
 // Note: we use a fixed storage cost in order to minimize code
+let gas_cost = BigInt(2550000);
 let storage_cost_fees = fromMAS(2);
 let op_fee = BigInt(1);
 
