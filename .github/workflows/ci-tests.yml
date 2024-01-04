@@ -5,11 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          working-directory: ./smart-contract
-          node-version: '18'
-          cache: 'npm'
+      - uses: actions/setup-node@v4
       - name: Install
         working-directory: ./smart-contract
         run: npm ci
