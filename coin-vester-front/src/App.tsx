@@ -269,8 +269,8 @@ function Content() {
 
     // Note: we use a fixed storage cost in order to minimize code
     let gas_cost = BigInt(2550000);
-    let storage_cost_fees = fromMAS(2);
-    let op_fee = BigInt(1);
+    let storage_cost_fees = fromMAS(0);
+    let op_fee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
@@ -295,7 +295,7 @@ function Content() {
     // Note: we use a fixed storage cost in order to minimize code
     let gas_cost = BigInt(2550000);
     let storage_cost_fees = fromMAS(0);
-    let op_fee = BigInt(1);
+    let op_fee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
@@ -323,7 +323,7 @@ function Content() {
     // Note: we use a fixed storage cost in order to minimize code
     let gas_cost = BigInt(2550000);
     let storage_cost_fees = fromMAS(2);
-    let op_fee = BigInt(1);
+    let op_fee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
         targetAddress: sc_addr,
