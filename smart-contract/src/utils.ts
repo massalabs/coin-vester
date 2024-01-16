@@ -40,3 +40,7 @@ export async function getDynamicCosts(
     }
     return estimatedGas;
 }
+
+export function assert(condition: unknown, msg?: string): asserts condition {
+    if (condition === false) throw new Error(msg)
+}
