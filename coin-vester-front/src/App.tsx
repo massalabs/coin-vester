@@ -228,7 +228,7 @@ function Content() {
             availableAmount = vestingInfo.totalAmount;
           } else {
             let timePassed = BigInt(now) - (vestingInfo.startTimestamp + vestingInfo.cliffDuration);
-            availableAmount = ((vestingInfo.totalAmount - vestingInfo.initialReleaseAmount) * timePassed) / vestingInfo.linearDuration;
+            availableAmount = vestingInfo.initialReleaseAmount + (((vestingInfo.totalAmount - vestingInfo.initialReleaseAmount) * timePassed) / vestingInfo.linearDuration);
           }
           // update the available amount
           sessions[i/2].availableAmount = availableAmount - claimedAmount;
