@@ -366,13 +366,13 @@ function Content() {
           onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
           >
             <span><strong>Tag:</strong> {s.vestingInfo!.tag}</span>
-            <span><strong>Total Amount:</strong> {s.vestingInfo!.totalAmount.toString()}</span>
-            <span><strong>Start Date:</strong> {s.vestingInfo!.startTimestamp.toString()}</span>
-            <span><strong>Initial Release:</strong> {s.vestingInfo!.initialReleaseAmount.toString()}</span>
-            <span><strong>Cliff End Date:</strong> {s.vestingInfo!.cliffDuration.toString()}</span>
-            <span><strong>Linear End Date:</strong> {s.vestingInfo!.linearDuration.toString()}</span>
-            <span><strong>Claimed:</strong> {s.claimedAmount.toString()}</span>
-            <span><strong>Available to Claim:</strong> {s.availableAmount.toString()}</span>
+            <span><strong>Total Amount (nMAS):</strong> {s.vestingInfo!.totalAmount.toString()}</span>
+            <span><strong>Start Date (unix timestamp in ms):</strong> {s.vestingInfo!.startTimestamp.toString()}</span>
+            <span><strong>Initial Release (nMAS):</strong> {s.vestingInfo!.initialReleaseAmount.toString()}</span>
+            <span><strong>Cliff Duration (ms):</strong> {s.vestingInfo!.cliffDuration.toString()}</span>
+            <span><strong>Linear Duration (ms):</strong> {s.vestingInfo!.linearDuration.toString()}</span>
+            <span><strong>Claimed (nMAS):</strong> {s.claimedAmount.toString()}</span>
+            <span><strong>Available to Claim (nMAS):</strong> {s.availableAmount.toString()}</span>
             {s.availableAmount.valueOf() > 0 && (
               <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
                 <input
