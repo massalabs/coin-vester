@@ -51,6 +51,12 @@ function Content() {
   useEffect(() => {
     async function registerAndSetProvider() {
         try {
+
+            if (account !== null && client !== null) {
+              // Only update React state (account & client) once
+              return;
+            }
+
             const allProviders = await providers(true, 10000);
 
             if (!allProviders || allProviders.length === 0) {
@@ -221,10 +227,8 @@ function Content() {
             // after linear period
             availableAmount = vestingInfo.totalAmount;
           } else {
-            // in the linear period
-            let timePassed = BigInt(now) - BigInt(vestingInfo.startTimestamp + vestingInfo.cliffDuration);
-            let totalDuration = BigInt(vestingInfo.linearDuration);
-            availableAmount = (vestingInfo.totalAmount * timePassed) / totalDuration;
+            let timePassed = BigInt(now) - (vestingInfo.startTimestamp + vestingInfo.cliffDuration);
+            availableAmount = ((vestingInfo.totalAmount - vestingInfo.initialReleaseAmount) * timePassed) / vestingInfo.linearDuration;
           }
           // update the available amount
           sessions[i/2].availableAmount = availableAmount - claimedAmount;
