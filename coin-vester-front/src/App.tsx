@@ -165,14 +165,17 @@ function Content() {
         // Here we have all the sessions of the user and their datastore keys.
         // Now get the values from the datastore.
         let queryKeys = [];
+        let newClaimAmount = [];
         for (let i = 0; i < sessions.length; i++) {
           queryKeys.push({ address: sc_addr, key: Uint8Array.from(sessions[i].vestingInfoKey) });
           queryKeys.push({ address: sc_addr, key: Uint8Array.from(sessions[i].claimedAmountKey) });
-          
-
-          // initialize claim amount array
-          let newClaimAmount = [...claimAmount];
-          newClaimAmount.push(BigInt(0));
+          if (i < claimAmount.length) {
+            newClaimAmount.push(claimAmount[i]);
+          } else {
+            newClaimAmount.push(BigInt(0));
+          }
+        }
+        if(newClaimAmount.length !== claimAmount.length){
           setClaimAmount(newClaimAmount);
         }
         let res = await client
