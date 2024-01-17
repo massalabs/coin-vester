@@ -3,7 +3,6 @@ import {
   ClientFactory,
   Args,
   Address,
-  Client,
   IClient,
   fromMAS
 } from "@massalabs/massa-web3";
@@ -37,7 +36,7 @@ function Content() {
   const [vestingSessions, setVestingSessions] = useState<vestingSessionType[]>([]);
 
   // claim fields
-  const [claimAmount, setClaimAmount] = useState(BigInt(0));
+  const [claimAmount, setClaimAmount] = useState<bigint[]>([]);
 
   // send fields
   const [sendToAddr, setSendToAddr] = useState('');
@@ -89,7 +88,7 @@ function Content() {
     }
 
     registerAndSetProvider();
-}, [account]);
+}, [account, client]);
 
   /**
    * Fetch session data when web3client is set
@@ -134,7 +133,7 @@ function Content() {
           // check that the address is in user_addresses, otherwise skip
           // Note: use filter here as there is no eq operator implemented for Address
           let user_addresses_filter = user_addresses.filter((addr) => {
-            return addr.base58Encode == keyAddress.base58Encode; });
+            return addr.base58Encode === keyAddress.base58Encode; });
           if (user_addresses_filter.length === 0) {
             continue;
           }
@@ -188,7 +187,7 @@ function Content() {
             throw new Error("Error: datastore entry not found");
           }
 
-          if (vestingInfoSerialized?.length == 0 || claimedAmountSerialized?.length === 0)
+          if (vestingInfoSerialized?.length === 0 || claimedAmountSerialized?.length === 0)
           {
             // Note: sometimes we got empty Uint8Array
             // This prevents an error in our app
@@ -268,7 +267,7 @@ function Content() {
   const handleClaim = async (index: number, client: IClient) => {
     let serialized_arg = new Args();
     serialized_arg.addU64(vestingSessions[index].id);
-    serialized_arg.addU64(claimAmount);
+    serialized_arg.addU64(claimAmount[index]);
     let serialized = serialized_arg.serialize();
 
     // Note: we use a fixed storage cost in order to minimize code
@@ -389,8 +388,12 @@ function Content() {
                     WebkitAppearance: 'none', // Remove the slider for Webkit browsers
                     MozAppearance: 'textfield', // Remove the slider for Firefox
                   }}
-                  value={claimAmount.toString()}
-                  onChange={(e) => setClaimAmount(BigInt(e.target.value))}
+                  value={claimAmount[index].toString()}
+                  onChange={(e) => {
+                    let newClaimAmount = [...claimAmount];
+                    newClaimAmount[index] = BigInt(e.target.value);
+                    setClaimAmount(newClaimAmount);
+                  }}
                 />
                 <button 
                   style={{ ...buttonStyle, backgroundColor: '#4CAF50', color: 'white' }}
