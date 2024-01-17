@@ -104,10 +104,10 @@ for(let i=0; i<allSessionKeys.length; i++) {
 
     let vestingSession = new Args(vestingSessionBytes).nextSerializable(VestingSessionInfo);
 
-    console.log("  - ", vestingSession);
+    // console.log("  - ", vestingSession);
     assert(vestingSession.toAddr === addr, "Vesting session info addr and key are !=");
-    console.log("  totalAmount:", toMAS(vestingSession.totalAmount).toString(), "MAS");
-    console.log("  initialReleaseAmount:", toMAS(vestingSession.initialReleaseAmount).toString(), "MAS");
+    console.log("  totalAmount:", toMAS(vestingSession.totalAmount).toString(), "MAS", `(${vestingSession.totalAmount} nanoMAS)`);
+    console.log("  initialReleaseAmount:", toMAS(vestingSession.initialReleaseAmount).toString(), "MAS", `(${vestingSession.initialReleaseAmount} nanoMAS)`);
     let start = new Date(Number(vestingSession.startTimestamp)).toUTCString();
     console.log("  startTimestamp (UTC)", start);
 
