@@ -168,6 +168,12 @@ function Content() {
         for (let i = 0; i < sessions.length; i++) {
           queryKeys.push({ address: sc_addr, key: Uint8Array.from(sessions[i].vestingInfoKey) });
           queryKeys.push({ address: sc_addr, key: Uint8Array.from(sessions[i].claimedAmountKey) });
+          
+
+          // initialize claim amount array
+          let newClaimAmount = [...claimAmount];
+          newClaimAmount.push(BigInt(0));
+          setClaimAmount(newClaimAmount);
         }
         let res = await client
           .publicApi()
@@ -244,7 +250,7 @@ function Content() {
     if (client) {
       funcGetData();
     }
-  }, [client, account]);
+  }, [client, account, claimAmount]);
 
   const buttonStyle = {
     padding: '10px 20px',
