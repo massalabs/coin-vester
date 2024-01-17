@@ -62,11 +62,14 @@ console.log("Client ready...");
 
 console.log("Creating a Vesting session...");
 
+// let timedelta = 60 * 60 * 1000; // 1 hour
+let timedelta = 0;
+
 // Placeholder function for send logic
 let serialized_arg = new Args();
-let sendToAddr = "AU16pM2bgEvcQe2ZN3VbQNwErjvZ8v75QgsPrEDwSX8Rrf1wcTkm";
+let sendToAddr = "AU1x5PzpZCyf93HAMhYV4VpmgMr8PNrAs1QDbEXVMGmeHvzrZqjY";
 let sendTotalAmount = BigInt(198);
-let sendStartTimestamp = BigInt(Date.now());
+let sendStartTimestamp = BigInt(Date.now() + timedelta);
 let sendInitialReleaseAmount = BigInt(50);
 let sendCliffDuration = BigInt(1000);
 let sendLinearDuration = BigInt(1000);
