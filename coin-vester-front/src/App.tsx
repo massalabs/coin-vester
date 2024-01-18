@@ -445,7 +445,7 @@ function Content() {
 
         </section>
 
-        <Collapsible trigger="Send vesting funds" triggerTagName="h2" triggerStyle={{color: '#555', marginBottom: '20px'}}>
+        <Collapsible trigger="Send Vested Funds" triggerTagName="h2" triggerClassName="collapsible-trigger" triggerStyle={{color: '#555', marginBottom: '20px'}} easing="ease">
           <div style={{display: 'flex', flexDirection: 'column', gap: '10px', width: '100%'}}>
             <label style={{marginBottom: '5px'}}>Tag:</label>
             <input type="text" style={{padding: '10px', borderRadius: '5px', border: '1px solid #ddd'}} value={sendTag}

@@ -11,3 +11,25 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.collapsible-trigger {
+  cursor: pointer;
+  position: relative;
+  padding-left: 30px;
+}
+
+.collapsible-trigger:before {
+  content: '▶';
+  position: absolute;
+  left: 0;
+}
+
+.is-open {
+  cursor: pointer;
+}
+
+.is-open:before {
+  content: '▼'; /* Keep the arrow when active */
+ 
+  transform: translateY(-50%); /* Ensure it stays vertically aligned */
+}
