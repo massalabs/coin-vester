@@ -236,6 +236,7 @@ function Content() {
             // after linear period
             availableAmount = vestingInfo.totalAmount;
           } else {
+              // in the linear period
             let timePassed = BigInt(now) - (vestingInfo.startTimestamp + vestingInfo.cliffDuration);
             availableAmount = vestingInfo.initialReleaseAmount + (((vestingInfo.totalAmount - vestingInfo.initialReleaseAmount) * timePassed) / vestingInfo.linearDuration);
           }
