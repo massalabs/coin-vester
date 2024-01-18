@@ -433,6 +433,15 @@ function Content() {
                 )}
               </div>
           ))}
+
+          {(account === null && client === null) &&
+              <p>Your wallet is not connected, please go to <a href="https://station.massa.net">Massa Station</a></p>
+          }
+
+          {(account !== null && client !== null && vestingSessions.length == 0) &&
+              <p>There are no active vesting sessions for your address: {account?.address()} </p>
+          }
+
         </section>
 
         <Collapsible trigger="Send vesting funds" triggerTagName="h2" triggerStyle={{color: '#555', marginBottom: '20px'}}>
