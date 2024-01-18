@@ -49,46 +49,46 @@ function Content() {
 
   useEffect(() => {
     async function registerAndSetProvider() {
-        try {
+      try {
 
-            if (account !== null && client !== null) {
-              // Only update React state (account & client) once
-              return;
-            }
-
-            const allProviders = await providers(true, 10000);
-
-            if (!allProviders || allProviders.length === 0) {
-              throw new Error("No providers available");
-            }
-
-            const massastationProvider = allProviders.find(provider => provider.name() === 'MASSASTATION');
-            
-            if (!massastationProvider) {
-                console.log("MASSASTATION provider not found");
-                return;
-            }
-
-            const accounts = await massastationProvider.accounts();
-            if (accounts.length === 0) {
-              console.log("No accounts found");
-                return;
-            }
-
-            setAccount(accounts[0]);
-            if (!account || !massastationProvider) {
-                return;
-            }
-
-            setClient(await ClientFactory.fromWalletProvider(massastationProvider, account));
-
-        } catch (e) {
-            console.log("Please install Massa Station and the wallet plugin of Massa Labs and refresh.");
+        if (account !== null && client !== null) {
+          // Only update React state (account & client) once
+          return;
         }
+
+        const allProviders = await providers(true, 10000);
+
+        if (!allProviders || allProviders.length === 0) {
+          throw new Error("No providers available");
+        }
+
+        const massastationProvider = allProviders.find(provider => provider.name() === 'MASSASTATION');
+
+        if (!massastationProvider) {
+          console.log("MASSASTATION provider not found");
+          return;
+        }
+
+        const accounts = await massastationProvider.accounts();
+        if (accounts.length === 0) {
+          console.log("No accounts found");
+          return;
+        }
+
+        setAccount(accounts[0]);
+        if (!account || !massastationProvider) {
+          return;
+        }
+
+        setClient(await ClientFactory.fromWalletProvider(massastationProvider, account));
+
+      } catch (e) {
+        console.log("Please install Massa Station and the wallet plugin of Massa Labs and refresh.");
+      }
     }
 
     registerAndSetProvider();
-}, [account, client]);
+  }, [account, client]);
 
   /**
    * Fetch session data when web3client is set
@@ -107,13 +107,13 @@ function Content() {
 
         // get all the vesting sessions of the user
         let addrInfo = await client
-          .publicApi()
-          .getAddresses([sc_addr]);
+            .publicApi()
+            .getAddresses([sc_addr]);
         let allKeys = addrInfo[0].candidate_datastore_keys;
 
         // list of sessions
         let sessions: vestingSessionType[] = [];
-        
+
         // find the keys
         for (let i = 0; i < allKeys.length; i++) {
 
@@ -179,8 +179,8 @@ function Content() {
           setClaimAmount(newClaimAmount);
         }
         let res = await client
-          .publicApi()
-          .getDatastoreEntries(queryKeys);
+            .publicApi()
+            .getDatastoreEntries(queryKeys);
 
         if (res.length !== queryKeys.length) {
           throw new Error("Error: datastore entries length invalid");
@@ -285,12 +285,12 @@ function Content() {
     let op_fee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-        targetAddress: sc_addr,
-        functionName: "claimVestingSession",
-        parameter: serialized,
-        maxGas: gas_cost,
-        coins: storage_cost_fees,
-        fee: op_fee
+      targetAddress: sc_addr,
+      functionName: "claimVestingSession",
+      parameter: serialized,
+      maxGas: gas_cost,
+      coins: storage_cost_fees,
+      fee: op_fee
     });
     console.log("CLAIM SUCCESSFUL", op);
   };
@@ -310,12 +310,12 @@ function Content() {
     let op_fee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-        targetAddress: sc_addr,
-        functionName: "clearVestingSession",
-        parameter: serialized,
-        maxGas: gas_cost,
-        coins: storage_cost_fees,
-        fee: op_fee
+      targetAddress: sc_addr,
+      functionName: "clearVestingSession",
+      parameter: serialized,
+      maxGas: gas_cost,
+      coins: storage_cost_fees,
+      fee: op_fee
     });
     console.log("DELETE SUCCESSFUL", op);
   };
@@ -338,123 +338,168 @@ function Content() {
     let op_fee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-        targetAddress: sc_addr,
-        functionName: "createVestingSession",
-        parameter: serialized,
-        maxGas: gas_cost,
-        coins: sendTotalAmount + BigInt(storage_cost_fees),
-        fee: op_fee
+      targetAddress: sc_addr,
+      functionName: "createVestingSession",
+      parameter: serialized,
+      maxGas: gas_cost,
+      coins: sendTotalAmount + BigInt(storage_cost_fees),
+      fee: op_fee
     });
     console.log("SEND SUCCESSFUL", op);
   }
 
 
   return (
-    <div style={{
-      fontFamily: 'Arial, sans-serif',
-      margin: '0 auto',
-      padding: '20px',
-      maxWidth: '800px',
-      backgroundColor: '#f7f7f7',
-      boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
-      borderRadius: '10px',
-    }}>
-      <h1 style={{ textAlign: 'center', color: '#333', marginBottom: '30px' }}>Coin Vester</h1>
+      <div style={{
+        fontFamily: 'Arial, sans-serif',
+        margin: '0 auto',
+        padding: '20px',
+        maxWidth: '800px',
+        backgroundColor: '#f7f7f7',
+        boxShadow: '0 4px 8px 0 rgba(0,0,0,0.2)',
+        borderRadius: '10px',
+      }}>
+        <h1 style={{textAlign: 'center', color: '#333', marginBottom: '30px'}}>Coin Vester</h1>
 
-      <section style={{ marginBottom: '40px' }}>
-        <h2 style={{ color: '#555', marginBottom: '20px' }}>Claim Received Funds</h2>
-        {vestingSessions.map((s, index) => (
-          <div key={s.id.toString()} style={{
-            border: '1px solid #ddd',
-            padding: '10px',
-            borderRadius: '5px',
-            marginBottom: '10px',
-            backgroundColor: 'white',
-            transition: 'box-shadow 0.3s',
-            display: 'flex',
-            flexDirection: 'column',
-          }}
-          onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)'}
-          onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
-          >
-            <span><strong>Tag:</strong> {s.vestingInfo!.tag}</span>
-            <span><strong>Total Amount (nMAS):</strong> {s.vestingInfo!.totalAmount.toString()}</span>
-            <span><strong>Start Date (unix timestamp in ms):</strong> {s.vestingInfo!.startTimestamp.toString()}</span>
-            <span><strong>Initial Release (nMAS):</strong> {s.vestingInfo!.initialReleaseAmount.toString()}</span>
-            <span><strong>Cliff Duration (ms):</strong> {s.vestingInfo!.cliffDuration.toString()}</span>
-            <span><strong>Linear Duration (ms):</strong> {s.vestingInfo!.linearDuration.toString()}</span>
-            <span><strong>Claimed (nMAS):</strong> {s.claimedAmount.toString()}</span>
-            <span><strong>Available to Claim (nMAS):</strong> {s.availableAmount.toString()}</span>
-            {s.availableAmount.valueOf() > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', marginTop: '10px' }}>
-                <input
-                  type="number"
-                  style={{ 
-                    padding: '10px',
-                    borderRadius: '5px',
-                    border: '1px solid #ddd',
-                    marginRight: '5px',
-                    WebkitAppearance: 'none', // Remove the slider for Webkit browsers
-                    MozAppearance: 'textfield', // Remove the slider for Firefox
-                  }}
-                  value={claimAmount[index].toString()}
-                  onChange={(e) => {
-                    let newClaimAmount = [...claimAmount];
-                    newClaimAmount[index] = BigInt(e.target.value);
-                    setClaimAmount(newClaimAmount);
-                  }}
-                />
-                <button 
-                  style={{ ...buttonStyle, backgroundColor: '#4CAF50', color: 'white' }}
-                  onClick={() => handleClaim(index, client!)}
-                >
-                  Claim
-                </button>
-              </div>
-            )}
-            {s.claimedAmount === s.vestingInfo!.totalAmount && (
-              <button
-                style={deleteButtonStyle}
-                onClick={() => handleDelete(index, client!)}
+        <h4 style={{textAlign: 'center', color: '#333', marginBottom: '30px'}}>
+          <p>This tool allows sending and receiving vested MAS tokens securely.</p>
+          <p>This app requires a compatible Massa wallet. We recommend <a href="https://station.massa.net">Massa Station</a></p>
+          <p>The "Claim Received Funds" section displays the active vesting sessions targeting your wallet address.</p>
+          <p>For each session, the currently available amount that can be claimed is displayed as "Available to Claim (nMAS)".</p>
+          <p>In order to claim a certain amount from the available amount of a session, simply enter the amount you want to claim and press the green "Claim" button.</p>
+          <p>Note that in order to preserve precision and remove any ambiguity, all displayed amounts, as well as the amounts you are expected to input are in nano-MAS (nMAS).</p>
+          <p>This means for example that in order to claim 123.456 MAS  you should input 123456000000.</p>
+        </h4>
+
+        <section style={{marginBottom: '40px'}}>
+          <h2 style={{color: '#555', marginBottom: '20px'}}>Claim Received Funds</h2>
+          {vestingSessions.map((s, index) => (
+              <div key={s.id.toString()} style={{
+                border: '1px solid #ddd',
+                padding: '10px',
+                borderRadius: '5px',
+                marginBottom: '10px',
+                backgroundColor: 'white',
+                transition: 'box-shadow 0.3s',
+                display: 'flex',
+                flexDirection: 'column',
+              }}
+                   onMouseEnter={e => e.currentTarget.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)'}
+                   onMouseLeave={e => e.currentTarget.style.boxShadow = 'none'}
               >
-                Delete
-              </button>
-            )}
-          </div>
-        ))}
-      </section>
+                <span><strong>Tag:</strong> {s.vestingInfo!.tag}</span>
+                <span><strong>Total Amount (nMAS):</strong> {s.vestingInfo!.totalAmount.toString()}</span>
+                <span><strong>Start Date (unix timestamp in ms):</strong> {s.vestingInfo!.startTimestamp.toString()}</span>
+                <span><strong>Initial Release (nMAS):</strong> {s.vestingInfo!.initialReleaseAmount.toString()}</span>
+                <span><strong>Cliff Duration (ms):</strong> {s.vestingInfo!.cliffDuration.toString()}</span>
+                <span><strong>Linear Duration (ms):</strong> {s.vestingInfo!.linearDuration.toString()}</span>
+                <span><strong>Claimed (nMAS):</strong> {s.claimedAmount.toString()}</span>
+                <span><strong>Available to Claim (nMAS):</strong> {s.availableAmount.toString()}</span>
+                {s.availableAmount.valueOf() > 0 && (
+                    <div style={{display: 'flex', alignItems: 'center', marginTop: '10px'}}>
+                      <input
+                          type="number"
+                          style={{
+                            padding: '10px',
+                            borderRadius: '5px',
+                            border: '1px solid #ddd',
+                            marginRight: '5px',
+                            WebkitAppearance: 'none', // Remove the slider for Webkit browsers
+                            MozAppearance: 'textfield', // Remove the slider for Firefox
+                          }}
+                          value={claimAmount[index].toString()}
+                          onChange={(e) => {
+                            let newClaimAmount = [...claimAmount];
+                            newClaimAmount[index] = BigInt(e.target.value);
+                            setClaimAmount(newClaimAmount);
+                          }}
+                      />
+                      <button
+                          style={{...buttonStyle, backgroundColor: '#4CAF50', color: 'white'}}
+                          onClick={() => handleClaim(index, client!)}
+                      >
+                        Claim
+                      </button>
+                    </div>
+                )}
+                {s.claimedAmount === s.vestingInfo!.totalAmount && (
+                    <button
+                        style={deleteButtonStyle}
+                        onClick={() => handleDelete(index, client!)}
+                    >
+                      Delete
+                    </button>
+                )}
+              </div>
+          ))}
+        </section>
 
-      <section>
-        <h2 style={{ color: '#555' }}>Send Vested Funds</h2>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%' }}>
-          <label style={{ marginBottom: '5px' }}>Tag:</label>
-          <input type="text" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} value={sendTag} onChange={(e) => setSendTag(e.target.value)} />
-          <label style={{ marginBottom: '5px' }}>Recipient Address:</label>
-          <input type="text" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd' }} value={sendToAddr} onChange={(e) => setSendToAddr(e.target.value)} />
-          <label style={{ marginBottom: '5px' }}>Total Amount (nano-MAS):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-            value={sendTotalAmount.toString()} onChange={(e) => setSendTotalAmount(BigInt(e.target.value))} />
-          <label style={{ marginBottom: '5px' }}>Start Time (millisecond unix timestamp):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-            value={sendStartTimestamp.toString()} onChange={(e) => setSendStartTimestamp(BigInt(e.target.value))} />
-          <label style={{ marginBottom: '5px' }}>Cliff Release (nano-MAS):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-            value={sendInitialReleaseAmount.toString()} onChange={(e) => setSendInitialReleaseAmount(BigInt(e.target.value))} />
-          <label style={{ marginBottom: '5px' }}>Cliff Duration (milliseconds):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-            value={sendCliffDuration.toString()} onChange={(e) => setSendCliffDuration(BigInt(e.target.value))} />
-          <label style={{ marginBottom: '5px' }}>Linear release duration (milliseconds):</label>
-          <input type="number" style={{ padding: '10px', borderRadius: '5px', border: '1px solid #ddd', WebkitAppearance: 'none', MozAppearance: 'textfield' }}
-            value={sendLinearDuration.toString()} onChange={(e) => setSendLinearDuration(BigInt(e.target.value))} />
-          <button
-            style={{ ...buttonStyle, backgroundColor: '#008CBA', color: 'white', width: '100%' }}
-            onClick={() => handleSend(client!)}
-          >
-            Send
-          </button>
-        </div>
-      </section>
-    </div>
+        <section>
+          <h2 style={{color: '#555'}}>Send Vested Funds</h2>
+          <div style={{display: 'flex', flexDirection: 'column', gap: '10px', width: '100%'}}>
+            <label style={{marginBottom: '5px'}}>Tag:</label>
+            <input type="text" style={{padding: '10px', borderRadius: '5px', border: '1px solid #ddd'}} value={sendTag}
+                   onChange={(e) => setSendTag(e.target.value)}/>
+            <label style={{marginBottom: '5px'}}>Recipient Address:</label>
+            <input type="text" style={{padding: '10px', borderRadius: '5px', border: '1px solid #ddd'}}
+                   value={sendToAddr} onChange={(e) => setSendToAddr(e.target.value)}/>
+            <label style={{marginBottom: '5px'}}>Total Amount (nano-MAS):</label>
+            <input type="number" style={{
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield'
+            }}
+                   value={sendTotalAmount.toString()} onChange={(e) => setSendTotalAmount(BigInt(e.target.value))}/>
+            <label style={{marginBottom: '5px'}}>Start Time (millisecond unix timestamp):</label>
+            <input type="number" style={{
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield'
+            }}
+                   value={sendStartTimestamp.toString()}
+                   onChange={(e) => setSendStartTimestamp(BigInt(e.target.value))}/>
+            <label style={{marginBottom: '5px'}}>Cliff Release (nano-MAS):</label>
+            <input type="number" style={{
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield'
+            }}
+                   value={sendInitialReleaseAmount.toString()}
+                   onChange={(e) => setSendInitialReleaseAmount(BigInt(e.target.value))}/>
+            <label style={{marginBottom: '5px'}}>Cliff Duration (milliseconds):</label>
+            <input type="number" style={{
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield'
+            }}
+                   value={sendCliffDuration.toString()} onChange={(e) => setSendCliffDuration(BigInt(e.target.value))}/>
+            <label style={{marginBottom: '5px'}}>Linear release duration (milliseconds):</label>
+            <input type="number" style={{
+              padding: '10px',
+              borderRadius: '5px',
+              border: '1px solid #ddd',
+              WebkitAppearance: 'none',
+              MozAppearance: 'textfield'
+            }}
+                   value={sendLinearDuration.toString()}
+                   onChange={(e) => setSendLinearDuration(BigInt(e.target.value))}/>
+            <button
+                style={{...buttonStyle, backgroundColor: '#008CBA', color: 'white', width: '100%'}}
+                onClick={() => handleSend(client!)}
+            >
+              Send
+            </button>
+          </div>
+        </section>
+      </div>
   );
 }
 
