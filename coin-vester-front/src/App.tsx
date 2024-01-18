@@ -91,6 +91,11 @@ function Content() {
     registerAndSetProvider();
   }, [account, client]);
 
+
+  useEffect(() => {
+    document.title = 'Massa Coin Vester';
+  }, []);
+
   /**
    * Fetch session data when web3client is set
    */
@@ -439,7 +444,7 @@ function Content() {
               <p>Your wallet is not connected, please go to <a href="https://station.massa.net">Massa Station</a></p>
           }
 
-          {(account !== null && client !== null && vestingSessions.length == 0) &&
+          {(account !== null && client !== null && vestingSessions.length === 0) &&
               <p>There are no active vesting sessions for your address: {account?.address()} </p>
           }
 
