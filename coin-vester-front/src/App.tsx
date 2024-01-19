@@ -328,6 +328,22 @@ function Content() {
   };
 
   const handleSend = async (client: IClient) => {
+    // Check if target addr has enough balance for the claim
+    let addrInfo = await client
+        .publicApi()
+        .getAddresses([sendToAddr]);
+    if(fromMAS(addrInfo[0].candidate_balance) === fromMAS("0") && addrInfo[0].candidate_roll_count === 0) {
+      window.alert("The target address does not exist. Initializing it first.")
+      // needs to send some funds to the target address
+      await client.wallet().sendTransaction({
+        recipientAddress: sendToAddr,
+        amount: fromMAS("0.001000001"),  // amount chosen to make sure the address exists and that we can detect it
+        fee: fromMAS("0"),
+      });
+      window.alert("The initialization transaction has been sent. Please wait a few seconds and try again.")
+      return;
+    }
+    
     // Placeholder function for send logic
     let serialized_arg = new Args();
     serialized_arg.addString(sendToAddr);
