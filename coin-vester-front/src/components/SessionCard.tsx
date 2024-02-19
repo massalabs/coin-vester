@@ -136,23 +136,33 @@ function VestingSessionCard(props: Props) {
       <hr />
       <Collapsible trigger="More infos">
         <div className="more-info-items">
-          Start Date:
+          <span title="The date at which the vesting starts.">
+            <i className="fa fa-info-circle" /> Start Date
+          </span>
           <b>{new Date(Number(startTimestamp)).toLocaleDateString("en-US")}</b>
         </div>
         <div className="more-info-items">
-          Initial Release:
+          <span title="The amount of MAS that is released at the start date.">
+            <i className="fa fa-info-circle" /> Initial Release
+          </span>
           <b>{fromnMAS(initialReleaseAmount)}</b>
         </div>
         <div className="more-info-items">
-          Cliff Duration:
+          <span title="The duration after which the linear release starts, starting from the start date.">
+            <i className="fa fa-info-circle" /> Cliff Duration
+          </span>
           <b>{msToTime(Number(cliffDuration))}</b>
         </div>
         <div className="more-info-items">
-          Linear Duration:
+          <span title="The duration over which the remaining amount is released, starting from the end of the cliff duration.">
+            <i className="fa fa-info-circle" /> Linear Duration
+          </span>
           <b>{msToTime(Number(linearDuration))}</b>
         </div>
         <div className="more-info-items">
-          Claimed:
+          <span title="The amount of MAS that was already claimed.">
+            <i className="fa fa-info-circle" /> Claimed Amount
+          </span>
           <b>{fromnMAS(claimedAmount)}</b>
         </div>
       </Collapsible>
