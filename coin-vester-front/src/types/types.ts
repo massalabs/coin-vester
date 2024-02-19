@@ -19,3 +19,5 @@ export type vestingSessionType = {
   claimedAmount: bigint;
   availableAmount: bigint;
 };
+
+export type SupportedWallets = "MASSASTATION" | "BEARBY";

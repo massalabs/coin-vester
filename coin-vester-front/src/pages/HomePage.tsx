@@ -5,19 +5,21 @@ import {
   Address,
   IClient,
   fromMAS,
+  EOperationStatus,
 } from "@massalabs/massa-web3";
 import { IAccount, providers } from "@massalabs/wallet-provider";
 
-import { vestingSessionType } from "../types/types";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import VestingSessionCard from "../components/SessionCard";
 
 import { ReactComponent as MassaWalletIcon } from "../assets/massa_wallet.svg";
 import { ReactComponent as BearbyWalletIcon } from "../assets/bearby_wallet.svg";
+
+import { sc_addr } from "../constants/sc";
+import { SupportedWallets, vestingSessionType } from "../types/types";
 import { formatAddress } from "../utils";
-
-const sc_addr = "AS12qzyNBDnwqq2vYwvUMHzrtMkVp6nQGJJ3TETVKF5HCd4yymzJP";
-
-type SupportedWallets = "MASSASTATION" | "BEARBY";
 
 export default function HomePage() {
   const [accounts, setAccounts] = useState<IAccount[]>([]);
@@ -315,7 +317,36 @@ export default function HomePage() {
       coins: storage_cost_fees,
       fee: op_fee,
     });
-    console.log("CLAIM SUCCESSFUL", op);
+
+    toast.promise(
+      client
+        .smartContracts()
+        .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS),
+      {
+        pending: {
+          render() {
+            return (
+              <div>
+                Claiming...
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`https://explorer.massa.net/mainnet/operation/${op}`}
+                >
+                  View on explorer
+                </a>
+              </div>
+            );
+          },
+        },
+        success: {
+          render: "Successfully claimed",
+        },
+        error: {
+          render: "Claim failed",
+        },
+      }
+    );
   };
 
   const handleDelete = async (vestingSessionId: bigint) => {
@@ -350,7 +381,38 @@ export default function HomePage() {
       coins: storage_cost_fees,
       fee: op_fee,
     });
-    console.log("DELETE SUCCESSFUL", op);
+
+    console.log("Operation ID: ", op);
+
+    toast.promise(
+      client
+        .smartContracts()
+        .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS),
+      {
+        pending: {
+          render() {
+            return (
+              <div>
+                Deleting...
+                <a
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`https://explorer.massa.net/mainnet/operation/${op}`}
+                >
+                  View on explorer
+                </a>
+              </div>
+            );
+          },
+        },
+        success: {
+          render: "Successfully deleted",
+        },
+        error: {
+          render: "Deletion failed",
+        },
+      }
+    );
   };
 
   // We get the list of accounts that do not have any vesting sessions
@@ -406,6 +468,7 @@ export default function HomePage() {
           )}
         </div>
       </div>
+      <ToastContainer />
       <div className="app-body">
         <section
           style={{
@@ -426,7 +489,6 @@ export default function HomePage() {
             is displayed as "Available to Claim (MAS)".
           </h4>
         </section>
-
         <section style={{ marginBottom: "40px" }}>
           {!connectedWallet && (
             <div className="vesting-session-card">

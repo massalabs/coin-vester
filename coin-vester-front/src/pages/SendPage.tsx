@@ -9,7 +9,7 @@ import {
 } from "@massalabs/massa-web3";
 import { IAccount, providers } from "@massalabs/wallet-provider";
 
-const sc_addr = "AS12qzyNBDnwqq2vYwvUMHzrtMkVp6nQGJJ3TETVKF5HCd4yymzJP";
+import { sc_addr } from "../constants/sc";
 
 type vestingInfoType = {
   toAddr: Address;
