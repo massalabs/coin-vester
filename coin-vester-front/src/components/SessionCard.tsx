@@ -14,15 +14,15 @@ type Props = {
   vestingSession: vestingSessionType;
   accountName?: string;
   accountProvider?: "MASSASTATION" | "BEARBY";
+  handleClaim: (vestingID: bigint, amount: bigint) => void;
+  handleDelete: (vestingID: bigint) => void;
 };
 
-function VestingSessionCard({
-  vestingSession,
-  accountName,
-  accountProvider,
-}: Props) {
+function VestingSessionCard(props: Props) {
+  const { vestingSession, accountName, accountProvider } = props;
   const [amountToClaim, setAmountToClaim] = useState("");
   const { vestingInfo, availableAmount, claimedAmount } = vestingSession;
+  const [error, setError] = useState<string | null>(null);
 
   if (!vestingInfo) return null;
 
@@ -35,23 +35,70 @@ function VestingSessionCard({
     tag,
   } = vestingInfo;
 
+  const checkValidAmount = (amount: string): string | null => {
+    if (amount === "") return "Please enter a value";
+    try {
+      const masAmount = fromMAS(amount);
+      if (masAmount < BigInt(0)) {
+        return "Please enter a positive number";
+      }
+      if (masAmount === BigInt(0)) {
+        return "Please enter a non-zero number";
+      }
+      if (masAmount > availableAmount) {
+        return "You can't claim more than the available amount";
+      }
+      return null;
+    } catch (e) {
+      if (e instanceof Error) {
+        console.error("Error parsing amount: ", e);
+        return `Please enter a valid MAS value`;
+      }
+      return "An unexpected error occurred";
+    }
+  };
+
   const handleClaim = () => {
-    // handle claim logic here
+    const error = checkValidAmount(amountToClaim);
+    if (error) {
+      setError(error);
+      return;
+    }
+
+    try {
+      const amount = fromMAS(amountToClaim);
+      props.handleClaim(vestingSession.id, amount);
+    } catch (e) {
+      if (e instanceof Error) {
+        setError(`Please enter a valid MAS value: ${e.message}`);
+        return;
+      }
+    }
+  };
+
+  const handleDelete = () => {
+    props.handleDelete(vestingSession.id);
+  };
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setAmountToClaim(e.target.value);
+    const error = checkValidAmount(e.target.value);
+    setError(error);
   };
 
   return (
     <div className="vesting-session-card">
       <div className="header">
-        <div>
+        <div className="avatar-container">
           {accountProvider === "BEARBY" ? (
             <BearbyWalletIcon className="avatar" />
           ) : accountProvider === "MASSASTATION" ? (
             <MassaWalletIcon className="avatar" />
           ) : null}
-          <strong>
+          <h3 style={{ marginLeft: "8px" }}>
             {accountName ? accountName : "Account"} -{" "}
             {formatAddress(toAddr.base58Encode)}
-          </strong>
+          </h3>
         </div>
         <span className="tag">{tag}</span>
       </div>
@@ -61,59 +108,52 @@ function VestingSessionCard({
       <div className="claimable-amount">
         Available to Claim: {fromnMAS(availableAmount)}
       </div>
-      <div className="input-container">
-        <input
-          type="text"
-          value={amountToClaim}
-          onChange={(e) => setAmountToClaim(e.target.value)}
-          onBlur={(e) => {
-            if (e.target.value === "") return;
-            try {
-              const isValid = fromMAS(e.target.value);
-              if (isValid < BigInt(0)) {
-                alert("Please enter a positive number");
-              }
-              if (isValid === BigInt(0)) {
-                alert("Please enter a non-zero number");
-              }
-            } catch (e) {
-              if (e instanceof Error) {
-                alert(`Please enter a valid MAS value: ${e.message}`);
-              }
-            }
-          }}
-        />
-        <button onClick={handleClaim}>Claim</button>
+      <div className="action-container">
+        {claimedAmount !== vestingInfo.totalAmount && (
+          <div className="input-container">
+            <div className="input-claim-container">
+              <input
+                type="text"
+                placeholder="Amount to claim"
+                value={amountToClaim}
+                onChange={handleAmountChange}
+              />
+              <button onClick={handleClaim} disabled={!!error}>
+                Claim
+              </button>
+            </div>
+            {error && (
+              <div className="error-container">
+                <p className="error">{error}</p>
+              </div>
+            )}
+          </div>
+        )}
+        {claimedAmount === vestingInfo.totalAmount && (
+          <button onClick={handleDelete}>Delete</button>
+        )}
       </div>
       <hr />
       <Collapsible trigger="More infos">
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>Start Date:</div>
-          <div style={{ fontWeight: "bold" }}>
-            {new Date(Number(startTimestamp)).toLocaleDateString("en-US")}
-          </div>
+        <div className="more-info-items">
+          Start Date:
+          <b>{new Date(Number(startTimestamp)).toLocaleDateString("en-US")}</b>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>Initial Release:</div>
-          <div style={{ fontWeight: "bold" }}>
-            {fromnMAS(initialReleaseAmount)}
-          </div>
+        <div className="more-info-items">
+          Initial Release:
+          <b>{fromnMAS(initialReleaseAmount)}</b>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>Cliff Duration:</div>
-          <div style={{ fontWeight: "bold" }}>
-            {msToTime(Number(cliffDuration))}
-          </div>
+        <div className="more-info-items">
+          Cliff Duration:
+          <b>{msToTime(Number(cliffDuration))}</b>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>Linear Duration:</div>
-          <div style={{ fontWeight: "bold" }}>
-            {msToTime(Number(linearDuration))}
-          </div>
+        <div className="more-info-items">
+          Linear Duration:
+          <b>{msToTime(Number(linearDuration))}</b>
         </div>
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
-          <div>Claimed:</div>
-          <div style={{ fontWeight: "bold" }}>{fromnMAS(claimedAmount)}</div>
+        <div className="more-info-items">
+          Claimed:
+          <b>{fromnMAS(claimedAmount)}</b>
         </div>
       </Collapsible>
     </div>

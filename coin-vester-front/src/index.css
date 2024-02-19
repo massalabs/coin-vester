@@ -24,6 +24,20 @@ button {
   display: inline-block;
   font-size: 16px;
   cursor: pointer;
+
+  &:hover {
+    background-color: #2e374c;
+  }
+
+  &:disabled {
+    background-color: #dadada;
+    cursor: auto;
+  }
+}
+
+.error {
+  display: inline;
+  color: red;
 }
 
 .app-header {
@@ -64,6 +78,13 @@ button {
   display: flex;
   align-items: center;
 }
+
+.app-header .button-container button {
+  &:disabled {
+    background-color: #010112;
+  }
+}
+
 .app-header .button-container svg {
   width: 24px;
   height: 24px;
@@ -118,4 +139,8 @@ button {
     opacity: 0.5;
     background-color: grey;
   }
+}
+
+.Collapsible__contentInner {
+  padding: 8px;
 }
