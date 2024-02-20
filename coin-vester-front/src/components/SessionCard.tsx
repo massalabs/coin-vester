@@ -39,6 +39,9 @@ function VestingSessionCard(props: Props) {
     if (amount === "") return "Please enter a value";
     try {
       const masAmount = fromMAS(amount);
+      if (amount.includes(".") && amount.split(".")[1].length > 9) {
+        return "The amount can't have a precision greater than 9";
+      }
       if (masAmount < BigInt(0)) {
         return "Please enter a positive number";
       }
