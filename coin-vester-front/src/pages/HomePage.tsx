@@ -71,7 +71,6 @@ export default function HomePage() {
       setClients(newClients);
 
       setConnectedWallet(walletProviderName);
-      console.log("Successfully connected to", walletProviderName, "wallet");
     } catch (e) {
       setError(
         `An error occurred while connecting to ${walletProviderName} wallet\n
@@ -385,8 +384,6 @@ export default function HomePage() {
       fee: op_fee,
     });
 
-    console.log("Operation ID: ", op);
-
     const opStatusPromise = client
       .smartContracts()
       .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS);
@@ -490,14 +487,15 @@ export default function HomePage() {
         >
           <h1 className="title">Coin Vester</h1>
           <h4 className="description">
-            This tool allows sending and receiving vested MAS tokens securely.
+            This tool allows receiving vested MAS tokens securely.
             <br />
             This app requires a compatible Massa wallet. We recommend{" "}
             <a href="https://station.massa.net">Massa Station</a>.<br />
-            The "Claim Received Funds" section displays the active vesting
-            sessions targeting your wallet address. <br />
+            The section below displays the active vesting sessions targeting
+            your wallet address.
+            <br />
             For each session, the currently available amount that can be claimed
-            is displayed as "Available to Claim (MAS)".
+            is displayed as "Available to Claim".
           </h4>
         </section>
         <section style={{ marginBottom: "40px" }}>
