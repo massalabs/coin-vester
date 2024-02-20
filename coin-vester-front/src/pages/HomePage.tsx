@@ -36,6 +36,7 @@ export default function HomePage() {
 
   async function connectToWallet(walletProviderName: SupportedWallets) {
     try {
+      setError(null);
       const allProviders = await providers(true, 10000);
 
       if (!allProviders || allProviders.length === 0) {
@@ -59,6 +60,13 @@ export default function HomePage() {
         return;
       }
 
+      console.log("providerAccounts", providerAccounts);
+      if (walletProviderName === "BEARBY" && !providerAccounts[0].address()) {
+        setError(
+          `Your Bearby wallet seems to be locked.\nPlease make sure it is unlocked.`
+        );
+        return;
+      }
       setAccounts([...accounts, ...providerAccounts]);
 
       let newClients = { ...clients };
@@ -90,6 +98,8 @@ export default function HomePage() {
 
   async function getAccountVestingSessions(account: IAccount) {
     try {
+      setError(null);
+
       if (!clients) {
         throw new Error("No clients available");
       }
@@ -279,6 +289,8 @@ export default function HomePage() {
   }, [accounts, clients]);
 
   const handleClaim = async (vestingSessionId: bigint, amount: bigint) => {
+    setError(null);
+
     const vestingSession = vestingSessions.find(
       (session) => session.id === vestingSessionId
     );
@@ -352,6 +364,8 @@ export default function HomePage() {
   };
 
   const handleDelete = async (vestingSessionId: bigint) => {
+    setError(null);
+
     const vestingSession = vestingSessions.find(
       (session) => session.id === vestingSessionId
     );
