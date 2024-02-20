@@ -5,7 +5,12 @@ import { vestingSessionType } from "../types/types";
 
 import "./SessionCard.css";
 import { fromMAS } from "@massalabs/massa-web3";
-import { formatAddress, fromnMAS, msToDateWithTimeZone, msToTime } from "../utils";
+import {
+  formatAddress,
+  fromnMAS,
+  msToDateWithTimeZone,
+  msToTime,
+} from "../utils";
 
 import { ReactComponent as MassaWalletIcon } from "../assets/massa_wallet.svg";
 import { ReactComponent as BearbyWalletIcon } from "../assets/bearby_wallet.svg";
