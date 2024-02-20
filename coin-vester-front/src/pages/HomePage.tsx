@@ -90,8 +90,6 @@ export default function HomePage() {
   }
 
   async function getAccountVestingSessions(account: IAccount) {
-    console.log("Fetching vesting sessions for", account.address());
-
     try {
       if (!clients) {
         throw new Error("No clients available");
@@ -255,20 +253,17 @@ export default function HomePage() {
       }
 
       // set sessions
-      setVestingSessions((prevSessions) =>
-        [...prevSessions, ...sessions].sort((a, b) =>
+      setVestingSessions((prevSessions) => {
+        const oldSessions = prevSessions.filter(
+          (session) => session.address.base58Encode !== account.address()
+        );
+
+        return [...oldSessions, ...sessions].sort((a, b) =>
           (a.vestingInfo?.totalAmount || 0) <= (b.vestingInfo?.totalAmount || 0)
             ? 1
             : -1
-        )
-      );
-      console.log(
-        "Successfully fetched vesting sessions for",
-        account.address(),
-        "found",
-        sessions.length,
-        "sessions"
-      );
+        );
+      });
     } catch (e) {
       setError(`An error occurred while fetching vesting sessions\n
     Please try again later.`);
@@ -309,7 +304,7 @@ export default function HomePage() {
     let storage_cost_fees = fromMAS(0);
     let op_fee = BigInt(0);
 
-    let op = await client.smartContracts().callSmartContract({
+    const op = await client.smartContracts().callSmartContract({
       targetAddress: sc_addr,
       functionName: "claimVestingSession",
       parameter: serialized,
@@ -318,35 +313,43 @@ export default function HomePage() {
       fee: op_fee,
     });
 
-    toast.promise(
-      client
-        .smartContracts()
-        .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS),
-      {
-        pending: {
-          render() {
-            return (
-              <div>
-                Claiming...
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={`https://explorer.massa.net/mainnet/operation/${op}`}
-                >
-                  View on explorer
-                </a>
-              </div>
-            );
-          },
+    const opStatusPromise = client
+      .smartContracts()
+      .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS);
+
+    toast.promise(opStatusPromise, {
+      pending: {
+        render() {
+          return (
+            <div>
+              Claiming...
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href={`https://explorer.massa.net/mainnet/operation/${op}`}
+              >
+                View on explorer
+              </a>
+            </div>
+          );
         },
-        success: {
-          render: "Successfully claimed",
-        },
-        error: {
-          render: "Claim failed",
-        },
-      }
-    );
+      },
+      success: {
+        render: "Successfully claimed",
+      },
+      error: {
+        render: "Claim failed",
+      },
+    });
+
+    await opStatusPromise
+      .finally(() => {
+        // Force a refresh of the vesting sessions
+        setAccounts([...accounts]);
+      })
+      .catch((e) => {
+        console.error("Error claiming vesting session: ", e);
+      });
   };
 
   const handleDelete = async (vestingSessionId: bigint) => {
@@ -384,35 +387,43 @@ export default function HomePage() {
 
     console.log("Operation ID: ", op);
 
-    toast.promise(
-      client
-        .smartContracts()
-        .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS),
-      {
-        pending: {
-          render() {
-            return (
-              <div>
-                Deleting...
-                <a
-                  target="_blank"
-                  rel="noreferrer"
-                  href={`https://explorer.massa.net/mainnet/operation/${op}`}
-                >
-                  View on explorer
-                </a>
-              </div>
-            );
-          },
+    const opStatusPromise = client
+      .smartContracts()
+      .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS);
+
+    toast.promise(opStatusPromise, {
+      pending: {
+        render() {
+          return (
+            <div>
+              Deleting...
+              <a
+                target="_blank"
+                rel="noreferrer"
+                href={`https://explorer.massa.net/mainnet/operation/${op}`}
+              >
+                View on explorer
+              </a>
+            </div>
+          );
         },
-        success: {
-          render: "Successfully deleted",
-        },
-        error: {
-          render: "Deletion failed",
-        },
-      }
-    );
+      },
+      success: {
+        render: "Successfully deleted",
+      },
+      error: {
+        render: "Deletion failed",
+      },
+    });
+
+    await opStatusPromise
+      .finally(() => {
+        // Force a refresh of the vesting sessions
+        setAccounts([...accounts]);
+      })
+      .catch((e) => {
+        console.error("Error claiming vesting session: ", e);
+      });
   };
 
   // We get the list of accounts that do not have any vesting sessions
