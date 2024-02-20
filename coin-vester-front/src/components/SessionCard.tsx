@@ -5,7 +5,7 @@ import { vestingSessionType } from "../types/types";
 
 import "./SessionCard.css";
 import { fromMAS } from "@massalabs/massa-web3";
-import { formatAddress, fromnMAS, msToTime } from "../utils";
+import { formatAddress, fromnMAS, msToDateWithTimeZone, msToTime } from "../utils";
 
 import { ReactComponent as MassaWalletIcon } from "../assets/massa_wallet.svg";
 import { ReactComponent as BearbyWalletIcon } from "../assets/bearby_wallet.svg";
@@ -142,7 +142,10 @@ function VestingSessionCard(props: Props) {
           <span title="The date at which the vesting starts.">
             <i className="fa fa-info-circle" /> Start Date
           </span>
-          <b>{new Date(Number(startTimestamp)).toLocaleDateString("en-US")}</b>
+          <div className="info-content">
+            <b>{msToDateWithTimeZone(Number(startTimestamp))}</b>
+            <div className="raw-value">{startTimestamp.toString()} ms</div>
+          </div>
         </div>
         <div className="more-info-items">
           <span title="The amount of MAS that is released at the start date.">
@@ -154,13 +157,19 @@ function VestingSessionCard(props: Props) {
           <span title="The duration after which the linear release starts, starting from the start date.">
             <i className="fa fa-info-circle" /> Cliff Duration
           </span>
-          <b>{msToTime(Number(cliffDuration))}</b>
+          <div className="info-content">
+            <b>{msToTime(Number(cliffDuration))}</b>
+            <div className="raw-value">{cliffDuration.toString()} ms</div>
+          </div>
         </div>
         <div className="more-info-items">
           <span title="The duration over which the remaining amount is released, starting from the end of the cliff duration.">
             <i className="fa fa-info-circle" /> Linear Duration
           </span>
-          <b>{msToTime(Number(linearDuration))}</b>
+          <div className="info-content">
+            <b>{msToTime(Number(linearDuration))}</b>
+            <div className="raw-value">{linearDuration.toString()} ms</div>
+          </div>
         </div>
         <div className="more-info-items">
           <span title="The amount of MAS that was already claimed.">
