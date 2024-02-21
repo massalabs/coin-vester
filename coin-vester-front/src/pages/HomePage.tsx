@@ -54,18 +54,17 @@ export default function HomePage() {
         return;
       }
 
+      const isConnected = await walletProvider.connect();
+      if (!isConnected) {
+        throw new Error(`Failed to connect to ${walletProviderName} wallet`);
+      }
+
       const providerAccounts = await walletProvider.accounts();
       if (providerAccounts.length === 0) {
         setError(`No accounts found in ${walletProviderName} wallet`);
         return;
       }
 
-      if (walletProviderName === "BEARBY" && !providerAccounts[0].address()) {
-        setError(
-          "Your Bearby wallet seems to be locked. Please make sure it is unlocked."
-        );
-        return;
-      }
       setAccounts([...accounts, ...providerAccounts]);
 
       let newClients = { ...clients };
