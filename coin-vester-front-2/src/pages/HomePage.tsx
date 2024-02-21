@@ -1,294 +1,227 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  ClientFactory,
   Args,
   Address,
-  IClient,
   fromMAS,
   EOperationStatus,
 } from '@massalabs/massa-web3';
-import { IAccount, providers } from '@massalabs/wallet-provider';
-
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 
 import VestingSessionCard from '../components/SessionCard';
 
-import { ReactComponent as MassaWalletIcon } from '../assets/massa_wallet.svg';
-import { ReactComponent as BearbyWalletIcon } from '../assets/bearby_wallet.svg';
-
-import { sc_addr } from '../constants/sc';
-import { SupportedWallets, vestingSessionType } from '../types/types';
-import { formatAddress } from '../utils';
+import { scAddr } from '../const/sc';
+import { VestingSession } from '../types/types';
+import { MassaLogo, toast } from '@massalabs/react-ui-kit';
+import { ConnectMassaWallet } from '../components/ConnectMassaWallets/ConnectMassaWallet';
+import { IAccount } from '@massalabs/wallet-provider';
+import { useAccountStore } from '../store';
 
 export default function HomePage() {
-  const [accounts, setAccounts] = useState<IAccount[]>([]);
-  const [clients, setClients] = useState<{ [key: string]: IClient } | null>(
-    null,
-  );
-  const [vestingSessions, setVestingSessions] = useState<vestingSessionType[]>(
-    [],
-  );
-
-  const [connectedWallet, setConnectedWallet] =
-    useState<SupportedWallets | null>(null);
+  const [vestingSessions, setVestingSessions] = useState<VestingSession[]>([]);
   const [error, setError] = useState<string | null>();
 
-  async function connectToWallet(walletProviderName: SupportedWallets) {
-    try {
-      setError(null);
-      const allProviders = await providers(true, 10000);
+  const {
+    connectedAccount,
+    massaClient: client,
+    currentProvider,
+  } = useAccountStore();
 
-      if (!allProviders || allProviders.length === 0) {
-        throw new Error('No providers available');
-      }
+  const getAccountVestingSessions = useCallback(
+    async (account: IAccount) => {
+      try {
+        setError(null);
 
-      const walletProvider = allProviders.find(
-        (provider) => provider.name() === walletProviderName,
-      );
-
-      if (!walletProvider) {
-        setError(
-          `Wallet ${walletProviderName} not found. Please make sure it is installed and running.`,
-        );
-        return;
-      }
-
-      const isConnected = await walletProvider.connect();
-      if (!isConnected) {
-        throw new Error(`Failed to connect to ${walletProviderName} wallet`);
-      }
-
-      const providerAccounts = await walletProvider.accounts();
-      if (providerAccounts.length === 0) {
-        setError(`No accounts found in ${walletProviderName} wallet`);
-        return;
-      }
-
-      setAccounts([...accounts, ...providerAccounts]);
-
-      let newClients = { ...clients };
-      for (let account of providerAccounts) {
-        newClients[account.address()] = await ClientFactory.fromWalletProvider(
-          walletProvider,
-          account,
-        );
-      }
-
-      setClients(newClients);
-      setConnectedWallet(walletProviderName);
-    } catch (e) {
-      setError(
-        `An error occurred while connecting to ${walletProviderName} wallet. 
-        Please make sure it is installed and running.`,
-      );
-      console.error(e);
-    }
-  }
-
-  function disconnectFromWallets() {
-    setAccounts([]);
-    setClients(null);
-    setVestingSessions([]);
-    setError(null);
-    setConnectedWallet(null);
-  }
-
-  async function getAccountVestingSessions(account: IAccount) {
-    try {
-      setError(null);
-
-      if (!clients) {
-        throw new Error('No clients available');
-      }
-      const client = clients[account.address()];
-      if (!client) {
-        throw new Error('Client not found');
-      }
-      // get all the addresses of the user from their wallet
-      // TODO, for now we support only one address
-      let user_addresses = [new Address(account.address())];
-
-      // get all the vesting sessions of the user
-      let addrInfo = await client.publicApi().getAddresses([sc_addr]);
-      let allKeys = addrInfo[0].candidate_datastore_keys;
-
-      // list of sessions
-      let sessions: vestingSessionType[] = [];
-
-      // find the keys
-      for (let i = 0; i < allKeys.length; i++) {
-        let key = allKeys[i];
-
-        let deser = new Args(key);
-        let keyTag = Number(deser.nextU8());
-
-        if (keyTag !== 0x02 && keyTag !== 0x03) {
-          // only interested in VestingInfoKey & ClaimedAmountKey
-          continue;
+        if (!client) {
+          console.error('Client not found');
+          return;
         }
+        // get all the addresses of the user from their wallet
+        let userAddresses = [new Address(account.address())];
 
-        let keyAddress = new Address(deser.nextString());
-        let keySessionId = deser.nextU64();
+        // get all the vesting sessions of the user
+        let addrInfo = await client.publicApi().getAddresses([scAddr]);
+        let allKeys = addrInfo[0].candidate_datastore_keys;
 
-        // check that the address is in user_addresses, otherwise skip
-        // Note: use filter here as there is no eq operator implemented for Address
-        let user_addresses_filter = user_addresses.filter((addr) => {
-          return addr.base58Encode === keyAddress.base58Encode;
-        });
-        if (user_addresses_filter.length === 0) {
-          continue;
-        }
+        // list of sessions
+        let sessions: VestingSession[] = [];
 
-        // find the session in the list of sessions
-        let sessionIndex = sessions.findIndex((s) => s.id === keySessionId);
-        if (sessionIndex === -1) {
-          // create a new session
-          sessions.push({
-            address: keyAddress,
-            id: keySessionId,
-            vestingInfoKey: [],
-            claimedAmountKey: [],
-            claimedAmount: BigInt(0),
-            availableAmount: BigInt(0),
+        // find the keys
+        for (let i = 0; i < allKeys.length; i++) {
+          let key = allKeys[i];
+
+          let deser = new Args(key);
+          let keyTag = Number(deser.nextU8());
+
+          if (keyTag !== 0x02 && keyTag !== 0x03) {
+            // only interested in VestingInfoKey & ClaimedAmountKey
+            continue;
+          }
+
+          let keyAddress = new Address(deser.nextString());
+          let keySessionId = deser.nextU64();
+
+          // check that the address is in user_addresses, otherwise skip
+          // Note: use filter here as there is no eq operator implemented for Address
+          let userAddressesFilter = userAddresses.filter((addr) => {
+            return addr.base58Encoded === keyAddress.base58Encoded;
           });
-          sessionIndex = sessions.length - 1;
+          if (userAddressesFilter.length === 0) {
+            continue;
+          }
+
+          // find the session in the list of sessions
+          let sessionIndex = sessions.findIndex((s) => s.id === keySessionId);
+          if (sessionIndex === -1) {
+            // create a new session
+            sessions.push({
+              address: keyAddress,
+              id: keySessionId,
+              vestingInfoKey: [],
+              claimedAmountKey: [],
+              claimedAmount: BigInt(0),
+              availableAmount: BigInt(0),
+            });
+            sessionIndex = sessions.length - 1;
+          }
+
+          if (keyTag === 0x02) {
+            // vesting info key
+            sessions[sessionIndex].vestingInfoKey = key;
+          } else if (keyTag === 0x03) {
+            // claimed amount key
+            sessions[sessionIndex].claimedAmountKey = key;
+          }
         }
 
-        if (keyTag === 0x02) {
-          // vesting info key
-          sessions[sessionIndex].vestingInfoKey = key;
-        } else if (keyTag === 0x03) {
-          // claimed amount key
-          sessions[sessionIndex].claimedAmountKey = key;
+        // Here we have all the sessions of the user and their datastore keys.
+        // Now get the values from the datastore.
+        let queryKeys = [];
+        // let newClaimAmount = [];
+        for (let i = 0; i < sessions.length; i++) {
+          queryKeys.push({
+            address: scAddr,
+            key: Uint8Array.from(sessions[i].vestingInfoKey),
+          });
+          queryKeys.push({
+            address: scAddr,
+            key: Uint8Array.from(sessions[i].claimedAmountKey),
+          });
+          // if (i < claimAmount.length) {
+          //   newClaimAmount.push(claimAmount[i]);
+          // } else {
+          //   newClaimAmount.push(BigInt(0));
+          // }
         }
-      }
+        // if (newClaimAmount.length !== claimAmount.length) {
+        //   setClaimAmount(newClaimAmount);
+        // }
+        let res = await client.publicApi().getDatastoreEntries(queryKeys);
 
-      // Here we have all the sessions of the user and their datastore keys.
-      // Now get the values from the datastore.
-      let queryKeys = [];
-      for (let i = 0; i < sessions.length; i++) {
-        queryKeys.push({
-          address: sc_addr,
-          key: Uint8Array.from(sessions[i].vestingInfoKey),
-        });
-        queryKeys.push({
-          address: sc_addr,
-          key: Uint8Array.from(sessions[i].claimedAmountKey),
-        });
-      }
-      let res = await client.publicApi().getDatastoreEntries(queryKeys);
-
-      if (res.length !== queryKeys.length) {
-        throw new Error('Error: datastore entries length invalid');
-      }
-
-      let now = Date.now();
-      for (let i = 0; i < queryKeys.length; i += 2) {
-        let vestingInfoSerialized = res[i]!.candidate_value;
-        let claimedAmountSerialized = res[i + 1]!.candidate_value;
-
-        if (
-          vestingInfoSerialized === null ||
-          claimedAmountSerialized === null
-        ) {
-          // throw error
-          throw new Error('Error: datastore entry not found');
+        if (res.length !== queryKeys.length) {
+          throw new Error('Error: datastore entries length invalid');
         }
 
-        if (
-          vestingInfoSerialized?.length === 0 ||
-          claimedAmountSerialized?.length === 0
-        ) {
-          // Note: sometimes we got empty Uint8Array
-          // This prevents an error in our app
-          continue;
+        let now = Date.now();
+        for (let i = 0; i < queryKeys.length; i += 2) {
+          let vestingInfoSerialized = res[i]!.candidate_value;
+          let claimedAmountSerialized = res[i + 1]!.candidate_value;
+
+          if (
+            vestingInfoSerialized === null ||
+            claimedAmountSerialized === null
+          ) {
+            // throw error
+            throw new Error('Error: datastore entry not found');
+          }
+
+          if (
+            vestingInfoSerialized?.length === 0 ||
+            claimedAmountSerialized?.length === 0
+          ) {
+            // Note: sometimes we got empty Uint8Array
+            // This prevents an error in our app
+            console.error('Empty datastore entry');
+            continue;
+          }
+
+          // deserialize the vesting info
+          let deser = new Args(vestingInfoSerialized);
+
+          let vestingInfo = {
+            toAddr: new Address(deser.nextString()),
+            totalAmount: deser.nextU64(),
+            startTimestamp: deser.nextU64(),
+            initialReleaseAmount: deser.nextU64(),
+            cliffDuration: deser.nextU64(),
+            linearDuration: deser.nextU64(),
+            tag: deser.nextString(),
+          };
+
+          // deserialize the claimed amount
+          deser = new Args(claimedAmountSerialized);
+          let claimedAmount = deser.nextU64();
+          // add the values to the session
+          sessions[i / 2].vestingInfo = vestingInfo;
+          sessions[i / 2].claimedAmount = claimedAmount;
+
+          // calculate the available amount
+          let availableAmount = BigInt(0);
+          if (now < vestingInfo.startTimestamp) {
+            // before start
+            availableAmount = BigInt(0);
+          } else if (
+            now <
+            vestingInfo.startTimestamp + vestingInfo.cliffDuration
+          ) {
+            // cliff
+            availableAmount = vestingInfo.initialReleaseAmount;
+          } else if (
+            now >
+            vestingInfo.startTimestamp +
+              vestingInfo.cliffDuration +
+              vestingInfo.linearDuration
+          ) {
+            // after linear period
+            availableAmount = vestingInfo.totalAmount;
+          } else {
+            // in the linear period
+            let timePassed =
+              BigInt(now) -
+              (vestingInfo.startTimestamp + vestingInfo.cliffDuration);
+            availableAmount =
+              vestingInfo.initialReleaseAmount +
+              ((vestingInfo.totalAmount - vestingInfo.initialReleaseAmount) *
+                timePassed) /
+                vestingInfo.linearDuration;
+          }
+          // update the available amount
+          sessions[i / 2].availableAmount = availableAmount - claimedAmount;
         }
 
-        // deserialize the vesting info
-        let deser = new Args(vestingInfoSerialized);
+        // sort sessions by ID
+        sessions.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
 
-        let vestingInfo = {
-          toAddr: new Address(deser.nextString()),
-          totalAmount: deser.nextU64(),
-          startTimestamp: deser.nextU64(),
-          initialReleaseAmount: deser.nextU64(),
-          cliffDuration: deser.nextU64(),
-          linearDuration: deser.nextU64(),
-          tag: deser.nextString(),
-        };
-
-        // deserialize the claimed amount
-        deser = new Args(claimedAmountSerialized);
-        let claimedAmount = deser.nextU64();
-        // add the values to the session
-        sessions[i / 2].vestingInfo = vestingInfo;
-        sessions[i / 2].claimedAmount = claimedAmount;
-
-        // calculate the available amount
-        let availableAmount = BigInt(0);
-        if (now < vestingInfo.startTimestamp) {
-          // before start
-          availableAmount = BigInt(0);
-        } else if (
-          now <
-          vestingInfo.startTimestamp + vestingInfo.cliffDuration
-        ) {
-          // cliff
-          availableAmount = vestingInfo.initialReleaseAmount;
-        } else if (
-          now >
-          vestingInfo.startTimestamp +
-            vestingInfo.cliffDuration +
-            vestingInfo.linearDuration
-        ) {
-          // after linear period
-          availableAmount = vestingInfo.totalAmount;
-        } else {
-          // in the linear period
-          let timePassed =
-            BigInt(now) -
-            (vestingInfo.startTimestamp + vestingInfo.cliffDuration);
-          availableAmount =
-            vestingInfo.initialReleaseAmount +
-            ((vestingInfo.totalAmount - vestingInfo.initialReleaseAmount) *
-              timePassed) /
-              vestingInfo.linearDuration;
-        }
-        // update the available amount
-        sessions[i / 2].availableAmount = availableAmount - claimedAmount;
-      }
-
-      // set sessions
-      setVestingSessions((prevSessions) => {
-        const oldSessions = prevSessions.filter(
-          (session) => session.address.base58Encode !== account.address(),
-        );
-
-        return [...oldSessions, ...sessions].sort((a, b) =>
-          (a.vestingInfo?.totalAmount || 0) <= (b.vestingInfo?.totalAmount || 0)
-            ? 1
-            : -1,
-        );
-      });
-    } catch (e) {
-      setError(`An error occurred while fetching vesting sessions\n
+        // set sessions
+        setVestingSessions(sessions);
+      } catch (e) {
+        setError(`An error occurred while fetching vesting sessions\n
     Please try again later.`);
-      console.error(e);
-    }
-  }
+        console.error(e);
+      }
+    },
+    [client],
+  );
 
-  const updateVestingSessions = useCallback(() => {
-    if (accounts.length > 0 && clients) {
-      accounts.forEach((account) => {
-        getAccountVestingSessions(account);
-      });
+  const updateVestingSessions = useCallback(async () => {
+    if (connectedAccount && client) {
+      await getAccountVestingSessions(connectedAccount);
     }
-  }, [accounts, clients]);
+  }, [connectedAccount, client, getAccountVestingSessions]);
 
   useEffect(() => {
-    updateVestingSessions();
-  }, [updateVestingSessions]);
+    if (vestingSessions.length === 0 && connectedAccount) {
+      updateVestingSessions();
+    }
+  }, [connectedAccount, updateVestingSessions, vestingSessions.length]);
 
   const handleClaim = async (vestingSessionId: bigint, amount: bigint) => {
     setError(null);
@@ -301,29 +234,28 @@ export default function HomePage() {
       return;
     }
 
-    const client = clients?.[vestingSession.address.base58Encode];
     if (!client) {
       setError('Client not found for vesting session');
       return;
     }
 
-    let serialized_arg = new Args();
-    serialized_arg.addU64(vestingSession.id);
-    serialized_arg.addU64(amount);
-    let serialized = serialized_arg.serialize();
+    let serializedArg = new Args();
+    serializedArg.addU64(vestingSession.id);
+    serializedArg.addU64(amount);
+    let serialized = serializedArg.serialize();
 
     // Note: we use a fixed storage cost in order to minimize code
-    let gas_cost = BigInt(2550000);
-    let storage_cost_fees = fromMAS(0);
-    let op_fee = BigInt(0);
+    let gasCost = BigInt(2550000);
+    let storageCostFees = fromMAS(0);
+    let opFee = BigInt(0);
 
     const op = await client.smartContracts().callSmartContract({
-      targetAddress: sc_addr,
-      functionName: 'claimVestingSession',
+      targetAddress: scAddr,
+      targetFunction: 'claimVestingSession',
       parameter: serialized,
-      maxGas: gas_cost,
-      coins: storage_cost_fees,
-      fee: op_fee,
+      maxGas: gasCost,
+      coins: storageCostFees,
+      fee: opFee,
     });
 
     const opStatusPromise = client
@@ -331,28 +263,20 @@ export default function HomePage() {
       .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS);
 
     toast.promise(opStatusPromise, {
-      pending: {
-        render() {
-          return (
-            <div>
-              Claiming...
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href={`https://explorer.massa.net/mainnet/operation/${op}`}
-              >
-                View on explorer
-              </a>
-            </div>
-          );
-        },
-      },
-      success: {
-        render: 'Successfully claimed',
-      },
-      error: {
-        render: 'Claim failed',
-      },
+      loading: (
+        <div>
+          Claiming...
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={`https://explorer.massa.net/mainnet/operation/${op}`}
+          >
+            View on explorer
+          </a>
+        </div>
+      ),
+      success: 'Successfully claimed',
+      error: 'Claim failed',
     });
 
     await opStatusPromise
@@ -375,28 +299,27 @@ export default function HomePage() {
       return;
     }
 
-    const client = clients?.[vestingSession.address.base58Encode];
     if (!client) {
       setError('Client not found for vesting session');
       return;
     }
 
-    let serialized_arg = new Args();
-    serialized_arg.addU64(vestingSession.id);
-    let serialized = serialized_arg.serialize();
+    let serializedArg = new Args();
+    serializedArg.addU64(vestingSession.id);
+    let serialized = serializedArg.serialize();
 
     // Note: we use a fixed storage cost in order to minimize code
-    let gas_cost = BigInt(2550000);
-    let storage_cost_fees = fromMAS(0);
-    let op_fee = BigInt(0);
+    let gasCost = BigInt(2550000);
+    let storageCostFees = fromMAS(0);
+    let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: sc_addr,
-      functionName: 'clearVestingSession',
+      targetAddress: scAddr,
+      targetFunction: 'clearVestingSession',
       parameter: serialized,
-      maxGas: gas_cost,
-      coins: storage_cost_fees,
-      fee: op_fee,
+      maxGas: gasCost,
+      coins: storageCostFees,
+      fee: opFee,
     });
 
     const opStatusPromise = client
@@ -404,28 +327,20 @@ export default function HomePage() {
       .awaitRequiredOperationStatus(op, EOperationStatus.SPECULATIVE_SUCCESS);
 
     toast.promise(opStatusPromise, {
-      pending: {
-        render() {
-          return (
-            <div>
-              Deleting...
-              <a
-                target="_blank"
-                rel="noreferrer"
-                href={`https://explorer.massa.net/mainnet/operation/${op}`}
-              >
-                View on explorer
-              </a>
-            </div>
-          );
-        },
-      },
-      success: {
-        render: 'Successfully deleted',
-      },
-      error: {
-        render: 'Deletion failed',
-      },
+      loading: (
+        <div>
+          Deleting...
+          <a
+            target="_blank"
+            rel="noreferrer"
+            href={`https://explorer.massa.net/mainnet/operation/${op}`}
+          >
+            View on explorer
+          </a>
+        </div>
+      ),
+      success: 'Successfully deleted',
+      error: 'Deletion failed',
     });
 
     await opStatusPromise
@@ -437,70 +352,22 @@ export default function HomePage() {
       });
   };
 
-  // We get the list of accounts that do not have any vesting sessions
-  const walletsWithVesting = vestingSessions.map(
-    (session) => session.address.base58Encode,
-  );
-  const walletsWithNoVesting = accounts.filter(
-    (account) => !walletsWithVesting.includes(account.address()),
-  );
+  const providerName = currentProvider?.name();
 
   return (
-    <div
-      style={{
-        fontFamily: 'Urbane, sans-serif',
-      }}
-    >
-      <div className="app-header">
-        <img
-          src="/logo_massa.svg"
-          alt="Massa logo"
-          className="logo"
-          style={{ height: '64px' }}
-        />
-        <div className="button-container">
-          <div className="connect-buttons">
-            {!connectedWallet && (
-              <>
-                <button onClick={() => connectToWallet('MASSASTATION')}>
-                  <MassaWalletIcon />
-                  Connect MassaWallet
-                </button>
-                <button onClick={() => connectToWallet('BEARBY')}>
-                  <BearbyWalletIcon />
-                  Connect Bearby
-                </button>
-              </>
-            )}
-          </div>
-          {connectedWallet && (
-            <>
-              <button disabled>
-                {connectedWallet === 'MASSASTATION' ? (
-                  <MassaWalletIcon />
-                ) : (
-                  <BearbyWalletIcon />
-                )}
-                Connected
-              </button>
-              <button className="disconnect" onClick={disconnectFromWallets}>
-                Disconnect
-              </button>
-            </>
-          )}
+    <div className="m-5">
+      <div>
+        <div>
+          <MassaLogo />
+        </div>
+        <div className="m-10 w-1/3 min-w-[470px] max-w-[700px]">
+          <ConnectMassaWallet />
         </div>
       </div>
-      <ToastContainer />
-      <div className="app-body">
-        <section
-          style={{
-            marginBottom: '20px',
-            marginLeft: '8px',
-            marginRight: '8px',
-          }}
-        >
-          <h1 className="title">Coin Vester</h1>
-          <h4 className="description">
+      <div>
+        <section className="mb-10">
+          <h1 className="mas-h1">Coin Vester</h1>
+          <h4 className="mas-body">
             This tool allows receiving vested MAS tokens securely.
             <br />
             This app requires a compatible Massa wallet. We recommend{' '}
@@ -512,62 +379,39 @@ export default function HomePage() {
             is displayed as "Available to Claim".
           </h4>
         </section>
-        <section style={{ marginBottom: '40px' }}>
-          {!connectedWallet && (
+        <section className="mb-10">
+          {!connectedAccount && (
             <div className="vesting-session-card">
               <div className="header">
                 <h3>Connect a wallet to view your vesting sessions</h3>
               </div>
             </div>
           )}
-          {error ? (
+          {error && (
             <div className="vesting-session-card">
               <div className="header">
                 <h3>Error</h3>
               </div>
               <div className="total-amount">{error}</div>
             </div>
+          )}
+          {vestingSessions.length ? (
+            vestingSessions.map((s) => (
+              <VestingSessionCard
+                key={s.id.toString()}
+                vestingSession={s}
+                accountProvider={providerName}
+                accountName={connectedAccount?.name()}
+                handleClaim={handleClaim}
+                handleDelete={handleDelete}
+              />
+            ))
           ) : (
-            <>
-              {vestingSessions.map((s) => (
-                <VestingSessionCard
-                  key={s.id.toString()}
-                  vestingSession={s}
-                  accountProvider={connectedWallet ?? undefined}
-                  accountName={accounts
-                    .find((a) => a.address() === s.address.base58Encode)
-                    ?.name()}
-                  handleClaim={handleClaim}
-                  handleDelete={handleDelete}
-                />
-              ))}
-              {walletsWithNoVesting.map((account) => (
-                <div className="vesting-session-card" key={account.address()}>
-                  <div className="header">
-                    <div className="avatar-container">
-                      {connectedWallet === 'MASSASTATION' ? (
-                        <MassaWalletIcon
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                          }}
-                        />
-                      ) : connectedWallet === 'BEARBY' ? (
-                        <BearbyWalletIcon />
-                      ) : null}
-                      <h3 style={{ marginLeft: '8px' }}>
-                        {account.name() ? account.name() : 'Account'} -{' '}
-                        {formatAddress(account.address())}
-                      </h3>
-                    </div>
-                  </div>
-                  <div className="total-amount">
-                    No active vesting sessions for this address
-                  </div>
-                </div>
-              ))}
-            </>
+            <div className="vesting-session-card">
+              <div className="total-amount">
+                No active vesting sessions for this address
+              </div>
+            </div>
           )}
         </section>
       </div>

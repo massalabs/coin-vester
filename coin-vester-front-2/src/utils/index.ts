@@ -7,7 +7,8 @@ export function formatAddress(address: string) {
 
 export function msToTime(ms: number) {
   const duration = moment.duration(Number(ms));
-  return `${duration.years()} years ${duration.months()} months ${duration.days()} days ${duration.hours()} hours ${duration.minutes()} minutes`;
+  return `${duration.years()} years ${duration.months()} months ${duration.days()} days
+  ${duration.hours()} hours ${duration.minutes()} minutes`;
 }
 
 // Formats the date in the local timezone YYYY-MM-DD followed by the time zone abbreviation
@@ -22,4 +23,17 @@ export function msToDateWithTimeZone(ms: number) {
 
 export function fromnMAS(nMAS: bigint) {
   return toMAS(nMAS).toFormat() + ' MAS';
+}
+
+/**
+ * Masks the middle of an address with a specified character.
+ * @param str - The address to mask.
+ * @param mask - The character to use for masking. Defaults to `.`.
+ * @returns The masked address.
+ */
+export function maskAddress(str: string, length = 4, mask = '...'): string {
+  const start = length;
+  const end = str?.length - length;
+
+  return str ? str?.substring(0, start) + mask + str?.substring(end) : '';
 }
