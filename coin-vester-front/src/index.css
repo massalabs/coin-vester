@@ -1,35 +1,146 @@
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: #f5f5ff;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
     monospace;
 }
 
-.collapsible-trigger {
+button {
+  background-color: #010112;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
   cursor: pointer;
+
+  &:hover {
+    background-color: #2e374c;
+  }
+
+  &:disabled {
+    background-color: #dadada;
+    cursor: auto;
+  }
+}
+
+.error {
+  display: inline;
+  color: red;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 8px;
+}
+
+.app-header .logo {
+  margin-bottom: auto;
+}
+
+.app-header .button-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header .button-container button {
+  margin: 8px;
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  text-overflow: ellipsis;
+  font-weight: 600;
+}
+
+.app-header .button-container button.disconnect {
+  background-color: transparent;
+  color: #010112;
+  text-decoration: underline;
+  justify-content: flex-end;
+  padding: 0;
+}
+
+.app-header .button-container .connect-buttons {
+  display: flex;
+  align-items: center;
+}
+
+.app-header .button-container button {
+  &:disabled {
+    background-color: #010112;
+  }
+}
+
+.app-header .button-container svg {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+}
+
+.app-body {
+  margin: 0 auto;
+  padding: 20px;
+  max-width: 1000px;
+}
+
+.app-body .title {
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 40px;
+  margin-bottom: 20px;
+  color: #010112;
+}
+
+.app-body .description {
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 24px;
+  margin-bottom: 20px;
+  color: #010112;
+}
+
+.Collapsible__trigger {
+  display: block;
+  font-weight: 600;
+  text-decoration: none;
   position: relative;
-  padding-left: 30px;
+  padding: 10px;
+
+  &:after {
+    content: "\25BC";
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: block;
+    transition: transform 300ms;
+  }
+
+  &.is-open {
+    &:after {
+      transform: rotateZ(180deg);
+    }
+  }
+
+  &.is-disabled {
+    opacity: 0.5;
+    background-color: grey;
+  }
 }
 
-.collapsible-trigger:before {
-  content: '▶';
-  position: absolute;
-  left: 0;
-}
-
-.is-open {
-  cursor: pointer;
-}
-
-.is-open:before {
-  content: '▼'; /* Keep the arrow when active */
- 
-  transform: translateY(-50%); /* Ensure it stays vertically aligned */
+.Collapsible__contentInner {
+  padding: 8px;
 }
