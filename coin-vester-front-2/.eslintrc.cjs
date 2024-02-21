@@ -3,5 +3,6 @@ module.exports = {
   plugins: ['html', 'import'],
   rules: {
     'no-console': 'off',
+    'camelcase': 'warn',
   },
 };
