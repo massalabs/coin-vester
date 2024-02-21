@@ -1,16 +1,16 @@
 import { useState } from "react";
 import Collapsible from "react-collapsible";
 
-import { vestingSessionType } from "../types/types";
-
 import "./SessionCard.css";
 import { fromMAS } from "@massalabs/massa-web3";
+
 import {
   formatAddress,
   fromnMAS,
   msToDateWithTimeZone,
   msToTime,
 } from "../utils";
+import { SupportedWallets, vestingSessionType } from "../types/types";
 
 import { ReactComponent as MassaWalletIcon } from "../assets/massa_wallet.svg";
 import { ReactComponent as BearbyWalletIcon } from "../assets/bearby_wallet.svg";
@@ -18,7 +18,7 @@ import { ReactComponent as BearbyWalletIcon } from "../assets/bearby_wallet.svg"
 type Props = {
   vestingSession: vestingSessionType;
   accountName?: string;
-  accountProvider?: "MASSASTATION" | "BEARBY";
+  accountProvider?: SupportedWallets;
   handleClaim: (vestingID: bigint, amount: bigint) => void;
   handleDelete: (vestingID: bigint) => void;
 };
@@ -29,7 +29,17 @@ function VestingSessionCard(props: Props) {
   const { vestingInfo, availableAmount, claimedAmount } = vestingSession;
   const [error, setError] = useState<string | null>(null);
 
-  if (!vestingInfo) return null;
+  if (!vestingInfo) {
+    console.error(
+      "Vesting info is undefined for vesting session: ",
+      vestingSession
+    );
+    return (
+      <div className="vesting-session-card">
+        <h3>Error: Vesting info is undefined</h3>
+      </div>
+    );
+  }
 
   const {
     toAddr,
@@ -60,7 +70,7 @@ function VestingSessionCard(props: Props) {
     } catch (e) {
       if (e instanceof Error) {
         console.error("Error parsing amount: ", e);
-        return `Please enter a valid MAS value`;
+        return "Please enter a valid MAS value";
       }
       return "An unexpected error occurred";
     }

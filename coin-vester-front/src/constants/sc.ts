@@ -1,1 +1,1 @@
-export const sc_addr = "AS12qzyNBDnwqq2vYwvUMHzrtMkVp6nQGJJ3TETVKF5HCd4yymzJP";
+export const sc_addr = "AS14oUcMujECzburUs8iMZZGsJQQQ61MxPVUKyV8WUNrw3mHmSqF";

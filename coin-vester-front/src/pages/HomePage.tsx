@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ClientFactory,
   Args,
@@ -49,7 +49,7 @@ export default function HomePage() {
 
       if (!walletProvider) {
         setError(
-          `Wallet ${walletProviderName} not found.\nPlease make sure it is installed and running.`
+          `Wallet ${walletProviderName} not found. Please make sure it is installed and running.`
         );
         return;
       }
@@ -60,10 +60,9 @@ export default function HomePage() {
         return;
       }
 
-      console.log("providerAccounts", providerAccounts);
       if (walletProviderName === "BEARBY" && !providerAccounts[0].address()) {
         setError(
-          `Your Bearby wallet seems to be locked.\nPlease make sure it is unlocked.`
+          "Your Bearby wallet seems to be locked. Please make sure it is unlocked."
         );
         return;
       }
@@ -76,12 +75,12 @@ export default function HomePage() {
           account
         );
       }
-      setClients(newClients);
 
+      setClients(newClients);
       setConnectedWallet(walletProviderName);
     } catch (e) {
       setError(
-        `An error occurred while connecting to ${walletProviderName} wallet\n
+        `An error occurred while connecting to ${walletProviderName} wallet. 
         Please make sure it is installed and running.`
       );
       console.error(e);
@@ -280,13 +279,17 @@ export default function HomePage() {
     }
   }
 
-  useEffect(() => {
+  const updateVestingSessions = useCallback(() => {
     if (accounts.length > 0 && clients) {
       accounts.forEach((account) => {
         getAccountVestingSessions(account);
       });
     }
   }, [accounts, clients]);
+  
+  useEffect(() => {
+    updateVestingSessions();
+  }, [updateVestingSessions]);
 
   const handleClaim = async (vestingSessionId: bigint, amount: bigint) => {
     setError(null);
@@ -355,8 +358,7 @@ export default function HomePage() {
 
     await opStatusPromise
       .finally(() => {
-        // Force a refresh of the vesting sessions
-        setAccounts([...accounts]);
+        updateVestingSessions();
       })
       .catch((e) => {
         console.error("Error claiming vesting session: ", e);
@@ -429,8 +431,7 @@ export default function HomePage() {
 
     await opStatusPromise
       .finally(() => {
-        // Force a refresh of the vesting sessions
-        setAccounts([...accounts]);
+        updateVestingSessions();
       })
       .catch((e) => {
         console.error("Error claiming vesting session: ", e);

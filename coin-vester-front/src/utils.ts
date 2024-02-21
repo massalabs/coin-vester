@@ -21,5 +21,5 @@ export function msToDateWithTimeZone(ms: number) {
 }
 
 export function fromnMAS(nMAS: bigint) {
-  return toMAS(nMAS) + " MAS";
+  return toMAS(nMAS).toFormat() + " MAS";
 }
