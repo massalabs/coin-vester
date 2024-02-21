@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import Collapsible from 'react-collapsible';
 
 import './SessionCard.css';
 import { fromMAS } from '@massalabs/massa-web3';
@@ -10,15 +9,21 @@ import {
   msToDateWithTimeZone,
   msToTime,
 } from '../utils';
-import { SupportedWallets, vestingSessionType } from '../types/types';
-
-import { ReactComponent as MassaWalletIcon } from '../assets/massa_wallet.svg';
-import { ReactComponent as BearbyWalletIcon } from '../assets/bearby_wallet.svg';
+import { VestingSession } from '../types/types';
+import {
+  AccordionCategory,
+  AccordionContent,
+  MassaWallet,
+} from '@massalabs/react-ui-kit';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import Intl from '../i18n/i18n';
+import { BearbySvg } from './ConnectMassaWallets/BearbySvg';
+import { SUPPORTED_MASSA_WALLETS } from '../const/connect-massa-wallet';
 
 type Props = {
-  vestingSession: vestingSessionType;
+  vestingSession: VestingSession;
   accountName?: string;
-  accountProvider?: SupportedWallets;
+  accountProvider?: string;
   handleClaim: (vestingID: bigint, amount: bigint) => void;
   handleDelete: (vestingID: bigint) => void;
 };
@@ -108,14 +113,14 @@ function VestingSessionCard(props: Props) {
     <div className="vesting-session-card">
       <div className="header">
         <div className="avatar-container">
-          {accountProvider === 'BEARBY' ? (
-            <BearbyWalletIcon className="avatar" />
-          ) : accountProvider === 'MASSASTATION' ? (
-            <MassaWalletIcon className="avatar" />
+          {accountProvider === SUPPORTED_MASSA_WALLETS.BEARBY ? (
+            <BearbySvg />
+          ) : accountProvider === SUPPORTED_MASSA_WALLETS.MASSASTATION ? (
+            <MassaWallet />
           ) : null}
           <h3 style={{ marginLeft: '8px' }}>
             {accountName ? accountName : 'Account'} -{' '}
-            {formatAddress(toAddr.base58Encode)}
+            {formatAddress(toAddr.base58Encoded)}
           </h3>
         </div>
         <span className="tag">{tag}</span>
@@ -152,47 +157,54 @@ function VestingSessionCard(props: Props) {
         )}
       </div>
       <hr />
-      <Collapsible trigger="More infos">
-        <div className="more-info-items">
-          <span title="The date at which the vesting starts.">
-            <i className="fa fa-info-circle" /> Start Date
-          </span>
-          <div className="info-content">
-            <b>{msToDateWithTimeZone(Number(startTimestamp))}</b>
-            <div className="raw-value">{startTimestamp.toString()} ms</div>
+      <AccordionCategory
+        iconOpen={<FiChevronDown />}
+        iconClose={<FiChevronUp />}
+        isChild={false}
+        categoryTitle={<p>{Intl.t('session-card.more-info')}</p>}
+      >
+        <AccordionContent>
+          <div className="more-info-items">
+            <span title="The date at which the vesting starts.">
+              <i className="fa fa-info-circle" /> Start Date
+            </span>
+            <div className="info-content">
+              <b>{msToDateWithTimeZone(Number(startTimestamp))}</b>
+              <div className="raw-value">{startTimestamp.toString()} ms</div>
+            </div>
           </div>
-        </div>
-        <div className="more-info-items">
-          <span title="The amount of MAS that is released at the start date.">
-            <i className="fa fa-info-circle" /> Initial Release
-          </span>
-          <b>{fromnMAS(initialReleaseAmount)}</b>
-        </div>
-        <div className="more-info-items">
-          <span title="The duration after which the linear release starts, starting from the start date.">
-            <i className="fa fa-info-circle" /> Cliff Duration
-          </span>
-          <div className="info-content">
-            <b>{msToTime(Number(cliffDuration))}</b>
-            <div className="raw-value">{cliffDuration.toString()} ms</div>
+          <div className="more-info-items">
+            <span title="The amount of MAS that is released at the start date.">
+              <i className="fa fa-info-circle" /> Initial Release
+            </span>
+            <b>{fromnMAS(initialReleaseAmount)}</b>
           </div>
-        </div>
-        <div className="more-info-items">
-          <span title="The duration over which the remaining amount is released, starting from the end of the cliff duration.">
-            <i className="fa fa-info-circle" /> Linear Duration
-          </span>
-          <div className="info-content">
-            <b>{msToTime(Number(linearDuration))}</b>
-            <div className="raw-value">{linearDuration.toString()} ms</div>
+          <div className="more-info-items">
+            <span title="The duration after which the linear release starts, starting from the start date.">
+              <i className="fa fa-info-circle" /> Cliff Duration
+            </span>
+            <div className="info-content">
+              <b>{msToTime(Number(cliffDuration))}</b>
+              <div className="raw-value">{cliffDuration.toString()} ms</div>
+            </div>
           </div>
-        </div>
-        <div className="more-info-items">
-          <span title="The amount of MAS that was already claimed.">
-            <i className="fa fa-info-circle" /> Claimed Amount
-          </span>
-          <b>{fromnMAS(claimedAmount)}</b>
-        </div>
-      </Collapsible>
+          <div className="more-info-items">
+            <span title={Intl.t('session-card.linear-duration-tooltip')}>
+              <i className="fa fa-info-circle" /> Linear Duration
+            </span>
+            <div className="info-content">
+              <b>{msToTime(Number(linearDuration))}</b>
+              <div className="raw-value">{linearDuration.toString()} ms</div>
+            </div>
+          </div>
+          <div className="more-info-items">
+            <span title="The amount of MAS that was already claimed.">
+              <i className="fa fa-info-circle" /> Claimed Amount
+            </span>
+            <b>{fromnMAS(claimedAmount)}</b>
+          </div>
+        </AccordionContent>
+      </AccordionCategory>
     </div>
   );
 }

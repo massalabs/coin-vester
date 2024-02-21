@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import Collapsible from 'react-collapsible';
 import {
   ClientFactory,
   Args,
@@ -9,7 +8,9 @@ import {
 } from '@massalabs/massa-web3';
 import { IAccount, providers } from '@massalabs/wallet-provider';
 
-import { sc_addr } from '../constants/sc';
+import { scAddr } from '../const/sc';
+import { AccordionCategory, AccordionContent } from '@massalabs/react-ui-kit';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 type vestingInfoType = {
   toAddr: Address;
@@ -62,7 +63,7 @@ function SendPage() {
           return;
         }
 
-        const allProviders = await providers(true, 10000);
+        const allProviders = await providers();
 
         if (!allProviders || allProviders.length === 0) {
           throw new Error('No providers available');
@@ -116,10 +117,10 @@ function SendPage() {
       if (client && account) {
         // get all the addresses of the user from their wallet
         // TODO, for now we support only one address
-        let user_addresses = [new Address(account.address())];
+        let userAddresses = [new Address(account.address())];
 
         // get all the vesting sessions of the user
-        let addrInfo = await client.publicApi().getAddresses([sc_addr]);
+        let addrInfo = await client.publicApi().getAddresses([scAddr]);
         let allKeys = addrInfo[0].candidate_datastore_keys;
 
         // list of sessions
@@ -140,12 +141,12 @@ function SendPage() {
           let keyAddress = new Address(deser.nextString());
           let keySessionId = deser.nextU64();
 
-          // check that the address is in user_addresses, otherwise skip
+          // check that the address is in userAddresses, otherwise skip
           // Note: use filter here as there is no eq operator implemented for Address
-          let user_addresses_filter = user_addresses.filter((addr) => {
-            return addr.base58Encode === keyAddress.base58Encode;
+          let userAddressesFilter = userAddresses.filter((addr) => {
+            return addr.base58Encoded === keyAddress.base58Encoded;
           });
-          if (user_addresses_filter.length === 0) {
+          if (userAddressesFilter.length === 0) {
             continue;
           }
 
@@ -179,11 +180,11 @@ function SendPage() {
         let newClaimAmount = [];
         for (let i = 0; i < sessions.length; i++) {
           queryKeys.push({
-            address: sc_addr,
+            address: scAddr,
             key: Uint8Array.from(sessions[i].vestingInfoKey),
           });
           queryKeys.push({
-            address: sc_addr,
+            address: scAddr,
             key: Uint8Array.from(sessions[i].claimedAmountKey),
           });
           if (i < claimAmount.length) {
@@ -309,23 +310,23 @@ function SendPage() {
   };
 
   const handleClaim = async (index: number, client: IClient) => {
-    let serialized_arg = new Args();
-    serialized_arg.addU64(vestingSessions[index].id);
-    serialized_arg.addU64(claimAmount[index]);
-    let serialized = serialized_arg.serialize();
+    let serializedArg = new Args();
+    serializedArg.addU64(vestingSessions[index].id);
+    serializedArg.addU64(claimAmount[index]);
+    let serialized = serializedArg.serialize();
 
     // Note: we use a fixed storage cost in order to minimize code
-    let gas_cost = BigInt(2550000);
-    let storage_cost_fees = fromMAS(0);
-    let op_fee = BigInt(0);
+    let gasCost = BigInt(2550000);
+    let storageCostFees = fromMAS(0);
+    let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: sc_addr,
-      functionName: 'claimVestingSession',
+      targetAddress: scAddr,
+      targetFunction: 'claimVestingSession',
       parameter: serialized,
-      maxGas: gas_cost,
-      coins: storage_cost_fees,
-      fee: op_fee,
+      maxGas: gasCost,
+      coins: storageCostFees,
+      fee: opFee,
     });
     console.log('CLAIM SUCCESSFUL', op);
   };
@@ -335,22 +336,22 @@ function SendPage() {
 
     // console.log("Deleting vesting session id:", vestingSessions[index].id);
 
-    let serialized_arg = new Args();
-    serialized_arg.addU64(vestingSessions[index].id);
-    let serialized = serialized_arg.serialize();
+    let serializedArg = new Args();
+    serializedArg.addU64(vestingSessions[index].id);
+    let serialized = serializedArg.serialize();
 
     // Note: we use a fixed storage cost in order to minimize code
-    let gas_cost = BigInt(2550000);
-    let storage_cost_fees = fromMAS(0);
-    let op_fee = BigInt(0);
+    let gasCost = BigInt(2550000);
+    let storageCostFees = fromMAS(0);
+    let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: sc_addr,
-      functionName: 'clearVestingSession',
+      targetAddress: scAddr,
+      targetFunction: 'clearVestingSession',
       parameter: serialized,
-      maxGas: gas_cost,
-      coins: storage_cost_fees,
-      fee: op_fee,
+      maxGas: gasCost,
+      coins: storageCostFees,
+      fee: opFee,
     });
     console.log('DELETE SUCCESSFUL', op);
   };
@@ -376,28 +377,24 @@ function SendPage() {
     }
 
     // Placeholder function for send logic
-    let serialized_arg = new Args();
-    serialized_arg.addString(sendToAddr);
-    serialized_arg.addU64(sendTotalAmount);
-    serialized_arg.addU64(sendStartTimestamp);
-    serialized_arg.addU64(sendInitialReleaseAmount);
-    serialized_arg.addU64(sendCliffDuration);
-    serialized_arg.addU64(sendLinearDuration);
-    serialized_arg.addString(sendTag);
-    let serialized = serialized_arg.serialize();
-
-    // Note: we use a fixed storage cost in order to minimize code
-    let gas_cost = BigInt(2550000);
-    let storage_cost_fees = fromMAS(2);
-    let op_fee = BigInt(0);
+    let serializedArg = new Args();
+    serializedArg.addString(sendToAddr);
+    serializedArg.addU64(sendTotalAmount);
+    serializedArg.addU64(sendStartTimestamp);
+    serializedArg.addU64(sendInitialReleaseAmount);
+    serializedArg.addU64(sendCliffDuration);
+    serializedArg.addU64(sendLinearDuration);
+    let gasCost = BigInt(2550000);
+    let storageCostFees = fromMAS(2);
+    let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: sc_addr,
-      functionName: 'createVestingSession',
-      parameter: serialized,
-      maxGas: gas_cost,
-      coins: sendTotalAmount + BigInt(storage_cost_fees),
-      fee: op_fee,
+      targetAddress: scAddr,
+      targetFunction: 'createVestingSession',
+      parameter: serializedArg.serialize(),
+      maxGas: gasCost,
+      coins: sendTotalAmount + BigInt(storageCostFees),
+      fee: opFee,
     });
     console.log('SEND SUCCESSFUL', op);
   };
@@ -567,133 +564,134 @@ function SendPage() {
         )}
       </section>
 
-      <Collapsible
-        trigger="Send Vested Funds"
-        triggerTagName="h2"
-        triggerClassName="collapsible-trigger"
-        triggerStyle={{ color: '#555', marginBottom: '20px' }}
-        easing="ease"
+      <AccordionCategory
+        iconOpen={<FiChevronDown />}
+        iconClose={<FiChevronUp />}
+        isChild={false}
+        categoryTitle={<p className="mas-h2">Send Vested Funds</p>}
       >
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-            width: '100%',
-          }}
-        >
-          <label style={{ marginBottom: '5px' }}>Tag:</label>
-          <input
-            type="text"
+        <AccordionContent>
+          <div
             style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-            }}
-            value={sendTag}
-            onChange={(e) => setSendTag(e.target.value)}
-          />
-          <label style={{ marginBottom: '5px' }}>Recipient Address:</label>
-          <input
-            type="text"
-            style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-            }}
-            value={sendToAddr}
-            onChange={(e) => setSendToAddr(e.target.value)}
-          />
-          <label style={{ marginBottom: '5px' }}>
-            Total Amount (nano-MAS):
-          </label>
-          <input
-            type="number"
-            style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-            value={sendTotalAmount.toString()}
-            onChange={(e) => setSendTotalAmount(BigInt(e.target.value))}
-          />
-          <label style={{ marginBottom: '5px' }}>
-            Start Time (millisecond unix timestamp):
-          </label>
-          <input
-            type="number"
-            style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-            value={sendStartTimestamp.toString()}
-            onChange={(e) => setSendStartTimestamp(BigInt(e.target.value))}
-          />
-          <label style={{ marginBottom: '5px' }}>
-            Cliff Release (nano-MAS):
-          </label>
-          <input
-            type="number"
-            style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-            value={sendInitialReleaseAmount.toString()}
-            onChange={(e) =>
-              setSendInitialReleaseAmount(BigInt(e.target.value))
-            }
-          />
-          <label style={{ marginBottom: '5px' }}>
-            Cliff Duration (milliseconds):
-          </label>
-          <input
-            type="number"
-            style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-            value={sendCliffDuration.toString()}
-            onChange={(e) => setSendCliffDuration(BigInt(e.target.value))}
-          />
-          <label style={{ marginBottom: '5px' }}>
-            Linear release duration (milliseconds):
-          </label>
-          <input
-            type="number"
-            style={{
-              padding: '10px',
-              borderRadius: '5px',
-              border: '1px solid #ddd',
-              WebkitAppearance: 'none',
-              MozAppearance: 'textfield',
-            }}
-            value={sendLinearDuration.toString()}
-            onChange={(e) => setSendLinearDuration(BigInt(e.target.value))}
-          />
-          <button
-            style={{
-              ...buttonStyle,
-              backgroundColor: '#008CBA',
-              color: 'white',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
               width: '100%',
             }}
-            onClick={() => handleSend(client!)}
           >
-            Send
-          </button>
-        </div>
-      </Collapsible>
+            <label style={{ marginBottom: '5px' }}>Tag:</label>
+            <input
+              type="text"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+              }}
+              value={sendTag}
+              onChange={(e) => setSendTag(e.target.value)}
+            />
+            <label style={{ marginBottom: '5px' }}>Recipient Address:</label>
+            <input
+              type="text"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+              }}
+              value={sendToAddr}
+              onChange={(e) => setSendToAddr(e.target.value)}
+            />
+            <label style={{ marginBottom: '5px' }}>
+              Total Amount (nano-MAS):
+            </label>
+            <input
+              type="number"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              }}
+              value={sendTotalAmount.toString()}
+              onChange={(e) => setSendTotalAmount(BigInt(e.target.value))}
+            />
+            <label style={{ marginBottom: '5px' }}>
+              Start Time (millisecond unix timestamp):
+            </label>
+            <input
+              type="number"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              }}
+              value={sendStartTimestamp.toString()}
+              onChange={(e) => setSendStartTimestamp(BigInt(e.target.value))}
+            />
+            <label style={{ marginBottom: '5px' }}>
+              Cliff Release (nano-MAS):
+            </label>
+            <input
+              type="number"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              }}
+              value={sendInitialReleaseAmount.toString()}
+              onChange={(e) =>
+                setSendInitialReleaseAmount(BigInt(e.target.value))
+              }
+            />
+            <label style={{ marginBottom: '5px' }}>
+              Cliff Duration (milliseconds):
+            </label>
+            <input
+              type="number"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              }}
+              value={sendCliffDuration.toString()}
+              onChange={(e) => setSendCliffDuration(BigInt(e.target.value))}
+            />
+            <label style={{ marginBottom: '5px' }}>
+              Linear release duration (milliseconds):
+            </label>
+            <input
+              type="number"
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                WebkitAppearance: 'none',
+                MozAppearance: 'textfield',
+              }}
+              value={sendLinearDuration.toString()}
+              onChange={(e) => setSendLinearDuration(BigInt(e.target.value))}
+            />
+            <button
+              style={{
+                ...buttonStyle,
+                backgroundColor: '#008CBA',
+                color: 'white',
+                width: '100%',
+              }}
+              onClick={() => handleSend(client!)}
+            >
+              Send
+            </button>
+          </div>
+        </AccordionContent>
+      </AccordionCategory>
     </div>
   );
 }
