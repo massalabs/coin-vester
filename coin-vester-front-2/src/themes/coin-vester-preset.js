@@ -1,8 +1,4 @@
-// We disable eslint to be able to define plugins.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { createThemes } = require('tw-colors');
-
-/** @type {import('tailwindcss').Config} */
+import { createThemes } from 'tw-colors';
 import plugin from 'tailwindcss/plugin';
 
 const colorGreen = '#1AE19D';
@@ -20,9 +16,8 @@ const colorWarning = '#FFA41D';
 const colorError = '#FF4F4F';
 const colorInfo = '#4AB2FF';
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
-  darkMode: 'class',
   theme: {
     fontFamily: {
       Urbane: ['Urbane', 'sans-serif'],
