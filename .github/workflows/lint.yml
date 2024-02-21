@@ -1,0 +1,22 @@
+name: Lint
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: "npm"
+      - name: Install dependencies
+        working-directory: ./coin-vester-front-2
+        run: npm ci
+      - name: Run code formating and linting
+        working-directory: ./coin-vester-front-2
+        run: npm run fmt:check

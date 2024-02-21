@@ -1,0 +1,2 @@
+cd ./coin-vester-front-2
+cd src && npx lint-staged
