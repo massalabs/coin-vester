@@ -219,10 +219,8 @@ export default function HomePage() {
   }, [connectedAccount, client, getAccountVestingSessions]);
 
   useEffect(() => {
-    if (vestingSessions.length === 0 && connectedAccount) {
-      updateVestingSessions();
-    }
-  }, [connectedAccount, updateVestingSessions, vestingSessions.length]);
+    updateVestingSessions();
+  }, [connectedAccount, updateVestingSessions]);
 
   const handleClaim = async (vestingSessionId: bigint, amount: bigint) => {
     setError(null);
@@ -353,6 +351,8 @@ export default function HomePage() {
       });
   };
 
+  const connected = !!connectedAccount && !!currentProvider;
+
   const providerName = currentProvider?.name();
 
   return (
@@ -385,19 +385,18 @@ export default function HomePage() {
           </Card>
         </section>
         <section className="mb-10">
-          {!connectedAccount && (
-            <Card>
-              <h3 className="mas-h3">
-                Connect a wallet to view your vesting sessions
-              </h3>
-            </Card>
-          )}
           {error && (
             <Card>
               <h3 className="mas-h3">{error}</h3>
             </Card>
           )}
-          {vestingSessions.length ? (
+          {!connected ? (
+            <Card>
+              <h3 className="mas-h3">
+                Connect a wallet to view your vesting sessions
+              </h3>
+            </Card>
+          ) : vestingSessions.length ? (
             vestingSessions.map((s) => (
               <VestingSessionCard
                 key={s.id.toString()}
