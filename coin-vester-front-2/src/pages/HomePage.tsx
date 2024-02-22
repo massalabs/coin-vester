@@ -388,7 +388,7 @@ export default function HomePage() {
           </h4>
         </section>
         <section className="mb-10">
-          <Card bgColor="bg-gray-300">
+          <Card>
             <ConnectMassaWallet />
           </Card>
         </section>
