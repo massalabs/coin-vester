@@ -399,6 +399,16 @@ function SendPage() {
     console.log('SEND SUCCESSFUL', op);
   };
 
+  const noVestingSession =
+    account !== null && client !== null && vestingSessions.length === 0;
+
+  const noVestingSessionMessage = (
+    <p>
+      There are no active vesting sessions for your address:{' '}
+      {account?.address()}{' '}
+    </p>
+  );
+
   return (
     <div
       style={{
@@ -554,14 +564,7 @@ function SendPage() {
           </p>
         )}
 
-        {account !== null &&
-          client !== null &&
-          vestingSessions.length === 0 && (
-          <p>
-              There are no active vesting sessions for your address:{' '}
-            {account?.address()}{' '}
-          </p>
-        )}
+        {noVestingSession && noVestingSessionMessage}
       </section>
 
       <AccordionCategory
