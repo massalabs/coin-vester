@@ -1,23 +1,21 @@
-import { Address } from "@massalabs/massa-web3";
+import { Address } from '@massalabs/massa-web3';
 
-export type vestingInfoType = {
+export type VestingInfo = {
   toAddr: Address;
   totalAmount: bigint;
   startTimestamp: bigint;
   initialReleaseAmount: bigint;
   cliffDuration: bigint;
   linearDuration: bigint;
-  tag: String;
+  tag: string;
 };
 
-export type vestingSessionType = {
+export type VestingSession = {
   address: Address;
   id: bigint;
   vestingInfoKey: number[];
   claimedAmountKey: number[];
-  vestingInfo?: vestingInfoType;
+  vestingInfo?: VestingInfo;
   claimedAmount: bigint;
   availableAmount: bigint;
 };
-
-export type SupportedWallets = "MASSASTATION" | "BEARBY";

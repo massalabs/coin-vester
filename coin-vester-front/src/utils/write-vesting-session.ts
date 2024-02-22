@@ -28,6 +28,7 @@ export function useWriteVestingSession(client?: Client) {
     if (isPending) {
       return;
     }
+    let toastId: string;
     setIsSuccess(false);
     setIsError(false);
     setIsPending(false);
@@ -44,18 +45,18 @@ export function useWriteVestingSession(client?: Client) {
       .then((opId) => {
         setOpId(opId);
         setIsPending(true);
-        toast.loading(messages.pending);
+        toastId = toast(messages.pending);
         return waitIncludedOperation(opId);
       })
       .then(() => {
         setIsSuccess(true);
         setIsPending(false);
-        toast.success(messages.success);
+        toast.success(messages.success, { id: toastId });
       })
       .catch(() => {
         setIsError(true);
         setIsPending(false);
-        toast.error(messages.error);
+        toast.error(messages.error, { id: toastId });
       });
   }
 
