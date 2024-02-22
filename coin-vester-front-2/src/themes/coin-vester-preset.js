@@ -23,8 +23,8 @@ module.exports = {
   plugins: [
     createThemes({
       light: {
-        primary: colorLightGrey,
-        secondary: colorWhite,
+        primary: colorWhite,
+        secondary: colorLightGrey,
         tertiary: colorDarkGrey,
         neutral: colorDarkBlue,
         info: colorDarkBlue,

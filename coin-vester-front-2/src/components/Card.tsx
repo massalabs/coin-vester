@@ -6,7 +6,7 @@ interface CardProps {
 
 export function Card({
   children,
-  bgColor = 'bg-secondary',
+  bgColor = 'bg-primary',
   customClass = '',
 }: CardProps) {
   return (
