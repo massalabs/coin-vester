@@ -3,14 +3,14 @@ import plugin from 'tailwindcss/plugin';
 
 const colorGreen = '#1AE19D';
 const colorWhite = '#FFFFFF';
-const colorDarkGrey = '#DADADA';
-const colorLightGrey = '#F4F4F4';
-const colorDarkBlue = '#151A26';
-const colorBasicBlue = '#1D1F30';
-const colorLightBlue = '#363A58';
+const colorDarkGrey = '#BBBAD9';
+const colorLightGrey = '#F5F5FF';
+const colorDarkBlue = '#010112';
+const colorBasicBlue = '#060625';
+const colorLightBlue = '#0C0C33';
 const colorWarning = '#FFA41D';
 const colorError = '#FF4F4F';
-const colorInfo = '#4AB2FF';
+const colorInfo = '#010112';
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -23,17 +23,16 @@ module.exports = {
   plugins: [
     createThemes({
       light: {
-        primary: colorWhite,
-        secondary: colorLightGrey,
+        primary: colorLightGrey,
+        secondary: colorWhite,
         tertiary: colorDarkGrey,
-        brand: colorGreen,
         neutral: colorDarkBlue,
-        info: colorLightBlue,
+        info: colorDarkBlue,
         // states:
         's-success': colorGreen,
         's-error': colorError,
         's-warning': colorWarning,
-        's-info': colorDarkGrey,
+        's-info': colorDarkBlue,
         's-info-1': colorInfo,
         // components:
         'c-default': colorDarkBlue,
@@ -45,11 +44,11 @@ module.exports = {
         // icons:
         'i-primary': colorDarkBlue,
         'i-secondary': colorWhite,
-        'i-tertiary': colorGreen,
+        'i-tertiary': colorDarkGrey,
         // fonts:
         'f-primary': colorDarkBlue,
         'f-secondary': colorWhite,
-        'f-tertiary': colorGreen,
+        'f-tertiary': colorDarkGrey,
         'f-disabled-1': colorDarkGrey,
         'f-disabled-2': colorWhite,
       },
