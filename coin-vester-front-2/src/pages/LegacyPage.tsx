@@ -32,7 +32,7 @@ type vestingSessionType = {
   availableAmount: bigint;
 };
 
-function SendPage() {
+function LegacyPage() {
   const [account, setAccount] = useState<IAccount | null>(null);
   const [client, setClient] = useState<IClient | null>(null);
   const [vestingSessions, setVestingSessions] = useState<vestingSessionType[]>(
@@ -384,6 +384,7 @@ function SendPage() {
     serializedArg.addU64(sendInitialReleaseAmount);
     serializedArg.addU64(sendCliffDuration);
     serializedArg.addU64(sendLinearDuration);
+    serializedArg.addString(sendTag);
     let gasCost = BigInt(2550000);
     let storageCostFees = fromMAS(2);
     let opFee = BigInt(0);
@@ -699,4 +700,4 @@ function SendPage() {
   );
 }
 
-export default SendPage;
+export default LegacyPage;
