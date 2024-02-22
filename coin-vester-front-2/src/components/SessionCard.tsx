@@ -1,29 +1,29 @@
 import { useState } from 'react';
-
-import './SessionCard.css';
 import { fromMAS } from '@massalabs/massa-web3';
 
+import {
+  AccordionCategory,
+  AccordionContent,
+  Button,
+  Input,
+  MassaWallet,
+} from '@massalabs/react-ui-kit';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+
+import { BearbySvg } from './ConnectMassaWallets/BearbySvg';
+
+import { Card } from './Card';
+import { MoreInfoItem } from './MoreInfoItem';
+
+import { SUPPORTED_MASSA_WALLETS } from '../const/connect-massa-wallet';
+import Intl from '../i18n/i18n';
+import { VestingSession } from '../types/types';
 import {
   formatAddress,
   fromnMAS,
   msToDateWithTimeZone,
   msToTime,
 } from '../utils';
-import { VestingSession } from '../types/types';
-import {
-  AccordionCategory,
-  AccordionContent,
-  MassaWallet,
-} from '@massalabs/react-ui-kit';
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
-
-import Intl from '../i18n/i18n';
-import { SUPPORTED_MASSA_WALLETS } from '../const/connect-massa-wallet';
-
-import { BearbySvg } from './ConnectMassaWallets/BearbySvg';
-
-import { Card } from './Card';
-import { MoreInfoItem } from './MoreInfoItem';
 
 type Props = {
   vestingSession: VestingSession;
@@ -115,53 +115,56 @@ function VestingSessionCard(props: Props) {
   };
 
   return (
-    <Card>
-      <div className="flex justify-between items-center">
-        <div className="avatar-container">
+    <Card customClass="pb-0">
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex flow-row items-center w-2/3">
           {accountProvider === SUPPORTED_MASSA_WALLETS.BEARBY ? (
             <BearbySvg />
           ) : accountProvider === SUPPORTED_MASSA_WALLETS.MASSASTATION ? (
             <MassaWallet />
           ) : null}
-          <h3 style={{ marginLeft: '8px' }}>
+          <h3 className="ml-2 mas-menu-active">
             {accountName ? accountName : 'Account'} -{' '}
             {formatAddress(toAddr.base58Encoded)}
           </h3>
         </div>
-        <span className="tag">{tag}</span>
+        <h3 className="mas-h3 overflow-auto text-right">{tag}</h3>
       </div>
-      <div className="total-amount">
-        Total amount: {fromnMAS(vestingInfo.totalAmount)}
+      <div className="mb-4">
+        <p className="mas-body">
+          Total amount: {fromnMAS(vestingInfo.totalAmount)}
+        </p>
+        <p className="mas-subtitle">
+          Available to Claim: {fromnMAS(availableAmount)}
+        </p>
       </div>
-      <div className="claimable-amount">
-        Available to Claim: {fromnMAS(availableAmount)}
-      </div>
-      <div className="action-container">
+      <div className="flex justify-between items-stretch mb-4">
         {claimedAmount !== vestingInfo.totalAmount && (
-          <div className="input-container">
-            <div className="input-claim-container">
-              <input
+          <div className="flex justify-between w-full">
+            <div className="flex flex-col w-2/3 mr-4">
+              <Input
                 type="text"
                 placeholder="Amount to claim"
                 value={amountToClaim}
                 onChange={handleAmountChange}
+                error={error ? error : undefined}
+                customClass="bg-primary"
               />
-              <button onClick={handleClaim} disabled={!!error}>
-                Claim
-              </button>
             </div>
-            {error && (
-              <div className="error-container">
-                <p className="error">{error}</p>
-              </div>
-            )}
+            <Button
+              onClick={handleClaim}
+              disabled={!!error}
+              customClass="w-1/3"
+            >
+              Claim
+            </Button>
           </div>
         )}
         {claimedAmount === vestingInfo.totalAmount && (
           <button onClick={handleDelete}>Delete</button>
         )}
       </div>
-      <hr />
+      <hr className="color-primary" />
       <AccordionCategory
         iconOpen={<FiChevronDown />}
         iconClose={<FiChevronUp />}
