@@ -10,10 +10,11 @@ import VestingSessionCard from '../components/SessionCard';
 
 import { scAddr } from '../const/sc';
 import { VestingSession } from '../types/types';
-import { MassaLogo, toast } from '@massalabs/react-ui-kit';
+import { toast } from '@massalabs/react-ui-kit';
 import { ConnectMassaWallet } from '../components/ConnectMassaWallets/ConnectMassaWallet';
 import { IAccount } from '@massalabs/wallet-provider';
 import { useAccountStore } from '../store';
+import { Card } from '../components/Card';
 
 export default function HomePage() {
   const [vestingSessions, setVestingSessions] = useState<VestingSession[]>([]);
@@ -355,18 +356,17 @@ export default function HomePage() {
   const providerName = currentProvider?.name();
 
   return (
-    <div className="m-5">
-      <div>
-        <div>
-          <MassaLogo />
-        </div>
-        <div className="m-10 w-1/3 min-w-[470px] max-w-[700px]">
-          <ConnectMassaWallet />
-        </div>
+    <div className="sm:w-full md:max-w-4xl mx-auto">
+      <div className="flex justify-between mb-2">
+        <img
+          src="/logo_massa.svg"
+          alt="Massa logo"
+          style={{ height: '64px' }}
+        />
       </div>
-      <div>
-        <section className="mb-10">
-          <h1 className="mas-h1">Coin Vester</h1>
+      <div className="p-5">
+        <section className="mb-4 p-2">
+          <h2 className="mas-h2">Coin Vester</h2>
           <h4 className="mas-body">
             This tool allows receiving vested MAS tokens securely.
             <br />
@@ -380,20 +380,22 @@ export default function HomePage() {
           </h4>
         </section>
         <section className="mb-10">
+          <Card bgColor="bg-gray-300">
+            <ConnectMassaWallet />
+          </Card>
+        </section>
+        <section className="mb-10">
           {!connectedAccount && (
-            <div className="vesting-session-card">
-              <div className="header">
-                <h3>Connect a wallet to view your vesting sessions</h3>
-              </div>
-            </div>
+            <Card>
+              <h3 className="mas-h3">
+                Connect a wallet to view your vesting sessions
+              </h3>
+            </Card>
           )}
           {error && (
-            <div className="vesting-session-card">
-              <div className="header">
-                <h3>Error</h3>
-              </div>
-              <div className="total-amount">{error}</div>
-            </div>
+            <Card>
+              <h3 className="mas-h3">{error}</h3>
+            </Card>
           )}
           {vestingSessions.length ? (
             vestingSessions.map((s) => (
@@ -407,11 +409,9 @@ export default function HomePage() {
               />
             ))
           ) : (
-            <div className="vesting-session-card">
-              <div className="total-amount">
-                No active vesting sessions for this address
-              </div>
-            </div>
+            <Card>
+              <h3 className="mas-h3">No active vesting sessions</h3>
+            </Card>
           )}
         </section>
       </div>
