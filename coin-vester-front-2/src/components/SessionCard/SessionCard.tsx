@@ -115,7 +115,7 @@ function VestingSessionCard(props: Props) {
   };
 
   return (
-    <Card customClass="pb-0">
+    <Card customClass="pb-0 mb-4">
       <div className="flex justify-between items-center mb-2">
         <div className="flex flow-row items-center w-2/3">
           {accountProvider === SUPPORTED_MASSA_WALLETS.BEARBY ? (
