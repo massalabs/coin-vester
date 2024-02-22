@@ -6,7 +6,7 @@ import {
   EOperationStatus,
 } from '@massalabs/massa-web3';
 
-import VestingSessionCard from '../components/SessionCard';
+import VestingSessionCard from '../components/SessionCard/SessionCard';
 
 import { scAddr } from '../const/sc';
 import { VestingSession } from '../types/types';
@@ -198,14 +198,19 @@ export default function HomePage() {
           sessions[i / 2].availableAmount = availableAmount - claimedAmount;
         }
 
-        // sort sessions by ID
-        sessions.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+        // sort sessions by total amount
+        sessions.sort((a, b) =>
+          (a.vestingInfo?.totalAmount ?? 0n) >
+          (b.vestingInfo?.totalAmount ?? 0n)
+            ? -1
+            : 1,
+        );
 
         // set sessions
         setVestingSessions(sessions);
       } catch (e) {
         setError(`An error occurred while fetching vesting sessions\n
-    Please try again later.`);
+          Please try again later.`);
         console.error(e);
       }
     },
@@ -366,12 +371,15 @@ export default function HomePage() {
       </div>
       <div className="p-5">
         <section className="mb-4 p-2">
-          <h2 className="mas-h2">Coin Vester</h2>
+          <p className="mas-title mb-2">Coin Vester</p>
           <h4 className="mas-body">
             This tool allows receiving vested MAS tokens securely.
             <br />
             This app requires a compatible Massa wallet. We recommend{' '}
-            <a href="https://station.massa.net">Massa Station</a>.<br />
+            <a className="mas-menu-underline" href="https://station.massa.net">
+              Massa Station
+            </a>
+            .<br />
             The section below displays the active vesting sessions targeting
             your wallet address.
             <br />
@@ -398,14 +406,15 @@ export default function HomePage() {
             </Card>
           ) : vestingSessions.length ? (
             vestingSessions.map((s) => (
-              <VestingSessionCard
-                key={s.id.toString()}
-                vestingSession={s}
-                accountProvider={providerName}
-                accountName={connectedAccount?.name()}
-                handleClaim={handleClaim}
-                handleDelete={handleDelete}
-              />
+              <div key={s.id.toString()} className="mb-4">
+                <VestingSessionCard
+                  vestingSession={s}
+                  accountProvider={providerName}
+                  accountName={connectedAccount?.name()}
+                  handleClaim={handleClaim}
+                  handleDelete={handleDelete}
+                />
+              </div>
             ))
           ) : (
             <Card>
