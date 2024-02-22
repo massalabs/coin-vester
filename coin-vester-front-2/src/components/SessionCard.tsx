@@ -14,9 +14,8 @@ import {
   AccordionCategory,
   AccordionContent,
   MassaWallet,
-  Tooltip,
 } from '@massalabs/react-ui-kit';
-import { FiChevronDown, FiChevronUp, FiInfo } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 import Intl from '../i18n/i18n';
 import { SUPPORTED_MASSA_WALLETS } from '../const/connect-massa-wallet';
