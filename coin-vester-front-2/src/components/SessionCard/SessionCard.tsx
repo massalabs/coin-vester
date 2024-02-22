@@ -10,20 +10,20 @@ import {
 } from '@massalabs/react-ui-kit';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
-import { BearbySvg } from './ConnectMassaWallets/BearbySvg';
+import { BearbySvg } from '../ConnectMassaWallets/BearbySvg';
 
-import { Card } from './Card';
+import { Card } from '../Card';
 import { MoreInfoItem } from './MoreInfoItem';
 
-import { SUPPORTED_MASSA_WALLETS } from '../const/connect-massa-wallet';
-import Intl from '../i18n/i18n';
-import { VestingSession } from '../types/types';
+import { SUPPORTED_MASSA_WALLETS } from '../../const/connect-massa-wallet';
+import Intl from '../../i18n/i18n';
+import { VestingSession } from '../../types/types';
 import {
   formatAddress,
   fromnMAS,
   msToDateWithTimeZone,
   msToTime,
-} from '../utils';
+} from '../../utils';
 
 type Props = {
   vestingSession: VestingSession;
@@ -171,7 +171,7 @@ function VestingSessionCard(props: Props) {
         isChild={false}
         categoryTitle={<p>{Intl.t('session-card.more-info')}</p>}
       >
-        <AccordionContent>
+        <AccordionContent customClass="pt-0">
           <MoreInfoItem
             title="Start Date"
             tooltip="The date at which the vesting starts."
