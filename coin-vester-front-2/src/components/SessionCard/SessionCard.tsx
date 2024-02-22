@@ -173,7 +173,9 @@ function VestingSessionCard(props: Props) {
           </div>
         )}
         {claimedAmount === vestingInfo.totalAmount && (
-          <button onClick={handleDelete}>Delete</button>
+          <Button variant="danger" onClick={handleDelete}>
+            Delete
+          </Button>
         )}
       </div>
       <hr className="color-primary" />
