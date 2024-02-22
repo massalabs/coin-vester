@@ -1,5 +1,9 @@
-import { MASSA_EXPLORER_URL, MASSA_EXPLO_EXTENSION, MASSA_EXPLO_URL } from "../../const/const";
-import { ShowLinkToExplorers } from "../ShowLinkToExplorers";
+import {
+  MASSA_EXPLORER_URL,
+  MASSA_EXPLO_EXTENSION,
+  MASSA_EXPLO_URL,
+} from '../../const/const';
+import { ShowLinkToExplorers } from '../ShowLinkToExplorers';
 
 interface PendingToastProps {
   message: string;
@@ -16,10 +20,8 @@ export function PendingToast(props: PendingToastProps) {
 
   return (
     <div className="bg-primary p-4 rounded-lg text-center mas-body text-f-primary">
-      <p>
-        {message}
-      </p>
+      <p>{message}</p>
       <ShowLinkToExplorers explorerUrl={explorerUrl} currentTxID={opId} />
     </div>
   );
-};
+}

@@ -4,7 +4,6 @@ import { waitIncludedOperation } from './massa-utils';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
 import { SC_ADDRESS } from '../const/sc';
-import { PendingToast } from '../components/Toasts/PendingToast';
 
 interface ToasterMessage {
   pending: string;
@@ -29,7 +28,6 @@ export function useWriteVestingSession(client?: Client) {
     if (isPending) {
       return;
     }
-    let toastId: string;
     setIsSuccess(false);
     setIsError(false);
     setIsPending(false);
@@ -46,20 +44,17 @@ export function useWriteVestingSession(client?: Client) {
       .then((opId) => {
         setOpId(opId);
         setIsPending(true);
-        toastId = toast.custom(<PendingToast message={messages.pending} opId={opId} />, {
-          duration: Infinity
-        });
         return waitIncludedOperation(opId);
       })
       .then(() => {
         setIsSuccess(true);
         setIsPending(false);
-        toast.success(messages.success, { id: toastId });
+        toast.success(messages.success);
       })
       .catch(() => {
         setIsError(true);
         setIsPending(false);
-        toast.error(messages.error, { id: toastId });
+        toast.error(messages.error);
       });
   }
 
