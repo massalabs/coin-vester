@@ -79,7 +79,6 @@ export function useReadVestingSessions(client?: Client) {
         // Here we have all the sessions of the user and their datastore keys.
         // Now get the values from the datastore.
         let queryKeys = [];
-        // let newClaimAmount = [];
         for (let i = 0; i < sessions.length; i++) {
           queryKeys.push({
             address: SC_ADDRESS,
@@ -89,15 +88,7 @@ export function useReadVestingSessions(client?: Client) {
             address: SC_ADDRESS,
             key: Uint8Array.from(sessions[i].claimedAmountKey),
           });
-          // if (i < claimAmount.length) {
-          //   newClaimAmount.push(claimAmount[i]);
-          // } else {
-          //   newClaimAmount.push(BigInt(0));
-          // }
         }
-        // if (newClaimAmount.length !== claimAmount.length) {
-        //   setClaimAmount(newClaimAmount);
-        // }
         let res = await client.publicApi().getDatastoreEntries(queryKeys);
 
         if (res.length !== queryKeys.length) {
