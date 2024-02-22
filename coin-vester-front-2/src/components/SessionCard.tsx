@@ -14,11 +14,17 @@ import {
   AccordionCategory,
   AccordionContent,
   MassaWallet,
+  Tooltip,
 } from '@massalabs/react-ui-kit';
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiInfo } from 'react-icons/fi';
+
 import Intl from '../i18n/i18n';
-import { BearbySvg } from './ConnectMassaWallets/BearbySvg';
 import { SUPPORTED_MASSA_WALLETS } from '../const/connect-massa-wallet';
+
+import { BearbySvg } from './ConnectMassaWallets/BearbySvg';
+
+import { Card } from './Card';
+import { MoreInfoItem } from './MoreInfoItem';
 
 type Props = {
   vestingSession: VestingSession;
@@ -40,7 +46,7 @@ function VestingSessionCard(props: Props) {
       vestingSession,
     );
     return (
-      <div className="vesting-session-card">
+      <div className="border-none rounded-xl">
         <h3>Error: Vesting info is undefined</h3>
       </div>
     );
@@ -110,8 +116,8 @@ function VestingSessionCard(props: Props) {
   };
 
   return (
-    <div className="vesting-session-card">
-      <div className="header">
+    <Card>
+      <div className="flex justify-between items-center">
         <div className="avatar-container">
           {accountProvider === SUPPORTED_MASSA_WALLETS.BEARBY ? (
             <BearbySvg />
@@ -164,48 +170,37 @@ function VestingSessionCard(props: Props) {
         categoryTitle={<p>{Intl.t('session-card.more-info')}</p>}
       >
         <AccordionContent>
-          <div className="more-info-items">
-            <span title="The date at which the vesting starts.">
-              <i className="fa fa-info-circle" /> Start Date
-            </span>
-            <div className="info-content">
-              <b>{msToDateWithTimeZone(Number(startTimestamp))}</b>
-              <div className="raw-value">{startTimestamp.toString()} ms</div>
-            </div>
-          </div>
-          <div className="more-info-items">
-            <span title="The amount of MAS that is released at the start date.">
-              <i className="fa fa-info-circle" /> Initial Release
-            </span>
-            <b>{fromnMAS(initialReleaseAmount)}</b>
-          </div>
-          <div className="more-info-items">
-            <span title="The duration after which the linear release starts, starting from the start date.">
-              <i className="fa fa-info-circle" /> Cliff Duration
-            </span>
-            <div className="info-content">
-              <b>{msToTime(Number(cliffDuration))}</b>
-              <div className="raw-value">{cliffDuration.toString()} ms</div>
-            </div>
-          </div>
-          <div className="more-info-items">
-            <span title={Intl.t('session-card.linear-duration-tooltip')}>
-              <i className="fa fa-info-circle" /> Linear Duration
-            </span>
-            <div className="info-content">
-              <b>{msToTime(Number(linearDuration))}</b>
-              <div className="raw-value">{linearDuration.toString()} ms</div>
-            </div>
-          </div>
-          <div className="more-info-items">
-            <span title="The amount of MAS that was already claimed.">
-              <i className="fa fa-info-circle" /> Claimed Amount
-            </span>
-            <b>{fromnMAS(claimedAmount)}</b>
-          </div>
+          <MoreInfoItem
+            title="Start Date"
+            tooltip="The date at which the vesting starts."
+            value={msToDateWithTimeZone(Number(startTimestamp))}
+            valueLabel={startTimestamp.toString() + ' ms'}
+          />
+          <MoreInfoItem
+            title="Initial Release"
+            tooltip="The amount of MAS that is released at the start date."
+            value={fromnMAS(initialReleaseAmount)}
+          />
+          <MoreInfoItem
+            title="Cliff Duration"
+            tooltip="The duration after which the linear release starts, starting from the start date."
+            value={msToTime(Number(cliffDuration))}
+            valueLabel={cliffDuration.toString() + ' ms'}
+          />
+          <MoreInfoItem
+            title="Linear Duration"
+            tooltip="The duration over which the remaining amount is linearly released."
+            value={msToTime(Number(linearDuration))}
+            valueLabel={linearDuration.toString() + ' ms'}
+          />
+          <MoreInfoItem
+            title="Claimed Amount"
+            tooltip="The amount of MAS that was already claimed."
+            value={fromnMAS(claimedAmount)}
+          />
         </AccordionContent>
       </AccordionCategory>
-    </div>
+    </Card>
   );
 }
 
