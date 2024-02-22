@@ -4,11 +4,7 @@ import { useAccountStore } from '../../../store';
 export function ChainStatus() {
   const { connectedAccount, currentProvider } = useAccountStore();
 
-  const isConnectMassa = !!connectedAccount;
+  const connected = !!connectedAccount && !!currentProvider;
 
-  return (
-    <>
-      {isConnectMassa && !!currentProvider ? <Connected /> : <Disconnected />}
-    </>
-  );
+  return <>{connected ? <Connected /> : <Disconnected />}</>;
 }
