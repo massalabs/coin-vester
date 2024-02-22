@@ -406,15 +406,14 @@ export default function HomePage() {
             </Card>
           ) : vestingSessions.length ? (
             vestingSessions.map((s) => (
-              <div key={s.id.toString()} className="mb-4">
-                <VestingSessionCard
-                  vestingSession={s}
-                  accountProvider={providerName}
-                  accountName={connectedAccount?.name()}
-                  handleClaim={handleClaim}
-                  handleDelete={handleDelete}
-                />
-              </div>
+              <VestingSessionCard
+                key={s.id.toString()}
+                vestingSession={s}
+                accountProvider={providerName}
+                accountName={connectedAccount?.name()}
+                handleClaim={handleClaim}
+                handleDelete={handleDelete}
+              />
             ))
           ) : (
             <Card>
