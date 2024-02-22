@@ -4,6 +4,7 @@ import { waitIncludedOperation } from './massa-utils';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
 import { SC_ADDRESS } from '../const/sc';
+import { PendingToast } from '../components/Toasts/PendingToast';
 
 interface ToasterMessage {
   pending: string;
@@ -15,7 +16,7 @@ export function useWriteVestingSession(client?: Client) {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [opId, setOpId] = useState<string | null>(null);
+  const [opId, setOpId] = useState<string | undefined>(undefined);
 
   function callSmartContract(
     targetFunction: string,
@@ -45,7 +46,9 @@ export function useWriteVestingSession(client?: Client) {
       .then((opId) => {
         setOpId(opId);
         setIsPending(true);
-        toastId = toast(messages.pending);
+        toastId = toast.custom(<PendingToast message={messages.pending} opId={opId} />, {
+          duration: Infinity
+        });
         return waitIncludedOperation(opId);
       })
       .then(() => {

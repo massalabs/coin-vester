@@ -12,6 +12,9 @@
     "delete-success": "Successfully deleted",
     "delete-failed": "Deletion failed"
   },
+  "toast": {
+    "explorer": "See operation in explorer"
+  },
   "connect-wallet": {
     "title": "Connect wallets",
     "connected": "Connected wallets",
