@@ -4,6 +4,14 @@
     "more-info": "More info",
     "linear-duration-tooltip": "The duration over which the remaining amount is released, starting from the end of the cliff duration."
   },
+  "steps": {
+    "claiming": "Claiming...",
+    "claim-success": "Successfully claimed",
+    "claim-failed": "Claim failed",
+    "deleting": "Deleting...",
+    "delete-success": "Successfully deleted",
+    "delete-failed": "Deletion failed"
+  },
   "connect-wallet": {
     "title": "Connect wallets",
     "connected": "Connected wallets",

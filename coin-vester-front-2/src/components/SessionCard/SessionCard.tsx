@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { fromMAS } from '@massalabs/massa-web3';
+import { useEffect, useState } from 'react';
+
+import { Args, fromMAS } from '@massalabs/massa-web3';
 
 import {
   AccordionCategory,
@@ -24,20 +25,28 @@ import {
   msToDateWithTimeZone,
   msToTime,
 } from '../../utils';
+import { useAccountStore } from '../../store';
+import { useWriteVestingSession } from '../../utils/write-vesting-session';
 
 type Props = {
   vestingSession: VestingSession;
-  accountName?: string;
-  accountProvider?: string;
-  handleClaim: (vestingID: bigint, amount: bigint) => void;
-  handleDelete: (vestingID: bigint) => void;
+  onUpdate: () => void;
 };
 
 function VestingSessionCard(props: Props) {
-  const { vestingSession, accountName, accountProvider } = props;
+  const { vestingSession, onUpdate } = props;
   const [amountToClaim, setAmountToClaim] = useState('');
   const { vestingInfo, availableAmount, claimedAmount } = vestingSession;
   const [error, setError] = useState<string | null>(null);
+  const { currentProvider, connectedAccount, massaClient } = useAccountStore();
+  const { claimVestingSession, deleteVestingSession, isSuccess } =
+    useWriteVestingSession(massaClient);
+
+  useEffect(() => {
+    if (isSuccess) {
+      onUpdate();
+    }
+  }, [isSuccess, onUpdate]);
 
   if (!vestingInfo) {
     console.error(
@@ -86,26 +95,26 @@ function VestingSessionCard(props: Props) {
     }
   };
 
-  const handleClaim = () => {
+  const handleClaim = async () => {
     const error = checkValidAmount(amountToClaim);
     if (error) {
       setError(error);
       return;
     }
 
-    try {
-      const amount = fromMAS(amountToClaim);
-      props.handleClaim(vestingSession.id, amount);
-    } catch (e) {
-      if (e instanceof Error) {
-        setError(`Please enter a valid MAS value: ${e.message}`);
-        return;
-      }
-    }
+    const amount = fromMAS(amountToClaim);
+    let serializedArg = new Args();
+    serializedArg.addU64(vestingSession.id);
+    serializedArg.addU64(amount);
+    let serialized = serializedArg.serialize();
+    claimVestingSession(serialized);
   };
 
   const handleDelete = () => {
-    props.handleDelete(vestingSession.id);
+    let serializedArg = new Args();
+    serializedArg.addU64(vestingSession.id);
+    let serialized = serializedArg.serialize();
+    deleteVestingSession(serialized);
   };
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +122,9 @@ function VestingSessionCard(props: Props) {
     const error = checkValidAmount(e.target.value);
     setError(error);
   };
+
+  const accountProvider = currentProvider?.name();
+  const accountName = connectedAccount?.name();
 
   return (
     <Card customClass="pb-0 mb-4">

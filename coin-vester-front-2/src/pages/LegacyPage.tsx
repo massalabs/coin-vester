@@ -8,7 +8,7 @@ import {
 } from '@massalabs/massa-web3';
 import { IAccount, providers } from '@massalabs/wallet-provider';
 
-import { scAddr } from '../const/sc';
+import { SC_ADDRESS } from '../const/sc';
 import { AccordionCategory, AccordionContent } from '@massalabs/react-ui-kit';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
@@ -120,7 +120,7 @@ function LegacyPage() {
         let userAddresses = [new Address(account.address())];
 
         // get all the vesting sessions of the user
-        let addrInfo = await client.publicApi().getAddresses([scAddr]);
+        let addrInfo = await client.publicApi().getAddresses([SC_ADDRESS]);
         let allKeys = addrInfo[0].candidate_datastore_keys;
 
         // list of sessions
@@ -180,11 +180,11 @@ function LegacyPage() {
         let newClaimAmount = [];
         for (let i = 0; i < sessions.length; i++) {
           queryKeys.push({
-            address: scAddr,
+            address: SC_ADDRESS,
             key: Uint8Array.from(sessions[i].vestingInfoKey),
           });
           queryKeys.push({
-            address: scAddr,
+            address: SC_ADDRESS,
             key: Uint8Array.from(sessions[i].claimedAmountKey),
           });
           if (i < claimAmount.length) {
@@ -321,7 +321,7 @@ function LegacyPage() {
     let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: scAddr,
+      targetAddress: SC_ADDRESS,
       targetFunction: 'claimVestingSession',
       parameter: serialized,
       maxGas: gasCost,
@@ -346,7 +346,7 @@ function LegacyPage() {
     let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: scAddr,
+      targetAddress: SC_ADDRESS,
       targetFunction: 'clearVestingSession',
       parameter: serialized,
       maxGas: gasCost,
@@ -390,7 +390,7 @@ function LegacyPage() {
     let opFee = BigInt(0);
 
     let op = await client.smartContracts().callSmartContract({
-      targetAddress: scAddr,
+      targetAddress: SC_ADDRESS,
       targetFunction: 'createVestingSession',
       parameter: serializedArg.serialize(),
       maxGas: gasCost,
