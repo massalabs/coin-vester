@@ -8,8 +8,9 @@ import {
   Button,
   Input,
   MassaWallet,
+  Spinner,
 } from '@massalabs/react-ui-kit';
-import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
 
 import { BearbySvg } from '../ConnectMassaWallets/BearbySvg';
 
@@ -27,6 +28,12 @@ import {
 } from '../../utils';
 import { useAccountStore } from '../../store';
 import { useWriteVestingSession } from '../../utils/write-vesting-session';
+import { ShowLinkToExplorers } from '../ShowLinkToExplorers';
+import {
+  MASSA_EXPLORER_URL,
+  MASSA_EXPLO_EXTENSION,
+  MASSA_EXPLO_URL,
+} from '../../const/const';
 
 type Props = {
   vestingSession: VestingSession;
@@ -39,8 +46,9 @@ function VestingSessionCard(props: Props) {
   const { vestingInfo, availableAmount, claimedAmount } = vestingSession;
   const [error, setError] = useState<string | null>(null);
   const { currentProvider, connectedAccount, massaClient } = useAccountStore();
-  const { claimVestingSession, deleteVestingSession, isSuccess } =
+  const { opId, claimVestingSession, deleteVestingSession, isSuccess } =
     useWriteVestingSession(massaClient);
+  const [isClaiming, setIsClaiming] = useState(false);
 
   useEffect(() => {
     if (isSuccess) {
@@ -107,6 +115,7 @@ function VestingSessionCard(props: Props) {
     serializedArg.addU64(vestingSession.id);
     serializedArg.addU64(amount);
     let serialized = serializedArg.serialize();
+    setIsClaiming(true);
     claimVestingSession(serialized);
   };
 
@@ -123,8 +132,19 @@ function VestingSessionCard(props: Props) {
     setError(error);
   };
 
+  const onCloseLink = () => {
+    setIsClaiming(false);
+    setAmountToClaim('');
+  };
+
   const accountProvider = currentProvider?.name();
   const accountName = connectedAccount?.name();
+
+  const isMainnet = import.meta.env.VITE_IS_MAINNET === 'true';
+
+  const buildnetExplorerUrl = `${MASSA_EXPLO_URL}${opId}${MASSA_EXPLO_EXTENSION}`;
+  const mainnetExplorerUrl = `${MASSA_EXPLORER_URL}${opId}`;
+  const explorerUrl = isMainnet ? mainnetExplorerUrl : buildnetExplorerUrl;
 
   return (
     <Card customClass="pb-0 mb-4">
@@ -154,14 +174,30 @@ function VestingSessionCard(props: Props) {
         {claimedAmount !== vestingInfo.totalAmount && (
           <div className="flex justify-between w-full">
             <div className="flex flex-col w-2/3 mr-4">
-              <Input
-                type="text"
-                placeholder="Amount to claim"
-                value={amountToClaim}
-                onChange={handleAmountChange}
-                error={error ? error : undefined}
-                customClass="bg-primary"
-              />
+              {isClaiming && opId ? (
+                <div className="flex flex-row">
+                  <ShowLinkToExplorers
+                    explorerUrl={explorerUrl}
+                    currentTxID={opId}
+                  />
+                  <Button
+                    variant="icon"
+                    onClick={onCloseLink}
+                    disabled={!isSuccess}
+                  >
+                    {isSuccess ? <FiX /> : <Spinner />}
+                  </Button>
+                </div>
+              ) : (
+                <Input
+                  type="text"
+                  placeholder="Amount to claim"
+                  value={amountToClaim}
+                  onChange={handleAmountChange}
+                  error={error ? error : undefined}
+                  customClass="bg-primary"
+                />
+              )}
             </div>
             <Button
               onClick={handleClaim}
