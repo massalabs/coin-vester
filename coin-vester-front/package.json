@@ -1,5 +1,5 @@
 {
-  "name": "coin-vester-front-2",
+  "name": "coin-vester-front",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,7 +13,7 @@
     "prettier:fix": "prettier --write .",
     "fmt": "npm run prettier:fix && npm run lint:fix",
     "fmt:check": "npm run prettier && npm run lint",
-    "prepare": "cd .. && husky coin-vester-front-2/.husky"
+    "prepare": "cd .. && husky coin-vester-front/.husky"
   },
   "dependencies": {
     "@massalabs/massa-web3": "^3.0.4-dev",
