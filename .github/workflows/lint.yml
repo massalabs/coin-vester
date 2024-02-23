@@ -9,7 +9,7 @@ jobs:
   lint-frontend:
     defaults:
       run:
-        working-directory: ./coin-vester-front-2
+        working-directory: ./coin-vester-front
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: 18
           cache: "npm"
-          cache-dependency-path: ./coin-vester-front-2/package-lock.json
+          cache-dependency-path: ./coin-vester-front/package-lock.json
       - name: Install dependencies
         run: npm ci
       - name: Run code formating and linting
