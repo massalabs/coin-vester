@@ -11,14 +11,24 @@ export function msToTime(ms: number) {
   ${duration.hours()} hours ${duration.minutes()} minutes`;
 }
 
-// Formats the date in the local timezone YYYY-MM-DD followed by the time zone abbreviation
-export function msToDateWithTimeZone(ms: number) {
+// Helper function to format the date
+function formatDateWithTimeZone(ms: number, format: string) {
   const date = moment(Number(ms)).local();
 
   const t = moment.tz.guess();
   const timeZone = moment.tz(t).zoneAbbr();
 
-  return `${date.format('YYYY-MM-DD')} ${timeZone}`;
+  return `${date.format(format)} ${timeZone}`;
+}
+
+// Formats the date in the local timezone YYYY-MM-DD followed by the time zone abbreviation
+export function msToDateWithTimeZone(ms: number) {
+  return formatDateWithTimeZone(ms, 'YYYY-MM-DD');
+}
+
+// Formats the date in the local timezone YYYY-MM-DD HH:mm followed by the time zone abbreviation
+export function msToDateTimeWithTimeZone(ms: number) {
+  return formatDateWithTimeZone(ms, 'YYYY-MM-DD HH:mm');
 }
 
 export function fromnMAS(nMAS: bigint) {
