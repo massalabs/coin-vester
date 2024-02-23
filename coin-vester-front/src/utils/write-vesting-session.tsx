@@ -1,10 +1,12 @@
-import { Client } from '@massalabs/massa-web3';
 import { useState } from 'react';
+import { Client, fromMAS } from '@massalabs/massa-web3';
 import { waitIncludedOperation } from './massa-utils';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
-import { SC_ADDRESS } from '../const/sc';
+
 import { OperationToast } from '../components/Toasts/OperationToast';
+
+import { SC_ADDRESS, VESTING_SESSION_STORAGE_COST } from '../const/sc';
 
 interface ToasterMessage {
   pending: string;
@@ -22,6 +24,8 @@ export function useWriteVestingSession(client?: Client) {
     targetFunction: string,
     parameter: number[],
     messages: ToasterMessage,
+    coins: bigint = BigInt(0),
+    fee: bigint = BigInt(0),
   ) {
     if (!client) {
       throw new Error('Massa client not found');
@@ -41,8 +45,8 @@ export function useWriteVestingSession(client?: Client) {
         targetFunction,
         parameter,
         maxGas: BigInt(2550000),
-        coins: BigInt(0),
-        fee: BigInt(0),
+        coins,
+        fee,
       })
       .then((opId) => {
         operationId = opId;
@@ -90,6 +94,19 @@ export function useWriteVestingSession(client?: Client) {
     });
   }
 
+  function createVestingSession(parameter: number[], sendTotalAmount: bigint) {
+    callSmartContract(
+      'createVestingSession',
+      parameter,
+      {
+        pending: Intl.t('steps.creating'),
+        success: Intl.t('steps.create-success'),
+        error: Intl.t('steps.create-failed'),
+      },
+      sendTotalAmount + VESTING_SESSION_STORAGE_COST,
+    );
+  }
+
   return {
     opId,
     isPending,
@@ -97,5 +114,6 @@ export function useWriteVestingSession(client?: Client) {
     isError,
     claimVestingSession,
     deleteVestingSession,
+    createVestingSession,
   };
 }
