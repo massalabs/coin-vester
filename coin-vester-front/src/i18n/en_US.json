@@ -10,7 +10,26 @@
     "claim-failed": "Claim failed",
     "deleting": "Deleting...",
     "delete-success": "Successfully deleted",
-    "delete-failed": "Deletion failed"
+    "delete-failed": "Deletion failed",
+    "creating": "Creating...",
+    "create-success": "Successfully created",
+    "create-failed": "Creation failed"
+  },
+  "send-vesting": {
+    "tag": "Tag",
+    "recipient": "Recipient Address",
+    "total-amount": "Total amount",
+    "amount-to-send": "Amount to send",
+    "start-timestamp": "Start Time (milliseconds UNIX timestamp)",
+    "initial-release-amount": "Initial release amount",
+    "cliff-duration": "Cliff duration (milliseconds)",
+    "linear-duration": "Linear duration (milliseconds)",
+    "send": "Send Vesting",
+    "confirm-modal": {
+      "title": "Please confirm",
+      "cancel": "Cancel",
+      "confirm-send": "Confirm Send"
+    }
   },
   "toast": {
     "explorer": "view in explorer"
