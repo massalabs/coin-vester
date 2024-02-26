@@ -1,18 +1,24 @@
 import { useState } from 'react';
-import { Address, Args, fromMAS } from '@massalabs/massa-web3';
+import { Args, fromMAS } from '@massalabs/massa-web3';
 import { Button, Input, Money } from '@massalabs/react-ui-kit';
 
 import { Card } from './Card';
+import { NumericInput } from './NumericInput';
+import { SendVestingConfirmationModal } from './SendVestingConfirmationModal';
 
 import { useAccountStore } from '../store';
 
 import Intl from '../i18n/i18n';
 
 import { VESTING_SESSION_STORAGE_COST } from '../const/sc';
-import { useWriteVestingSession } from '../utils/write-vesting-session';
 import { fromnMAS, msToDateTimeWithTimeZone, msToTime } from '../utils';
-import { SendVestingConfirmationModal } from './SendVestingConfirmationModal';
-import { NumericInput } from './NumericInput';
+import { useWriteVestingSession } from '../utils/write-vesting-session';
+import {
+  validateAddress,
+  validateStartTime,
+  validateTag,
+  validateDuration,
+} from '../utils/validation';
 
 export interface InputsErrors {
   tag?: string;
@@ -53,7 +59,7 @@ export function SendVestingCard() {
 
   const handleSend = async () => {
     if (!client) {
-      window.alert('Massa client not found');
+      console.error('Massa client not found');
       return;
     }
 
@@ -120,23 +126,6 @@ export function SendVestingCard() {
     return undefined;
   };
 
-  const validateDuration = (duration: string) => {
-    if (duration.length === 0) {
-      return 'Duration is required';
-    }
-    let durationInMS = BigInt(0);
-    try {
-      durationInMS = BigInt(duration);
-    } catch (e) {
-      return 'Invalid duration';
-    }
-    if (durationInMS < 0) {
-      return 'Duration must be greater than 0';
-    }
-
-    return undefined;
-  };
-
   const validateInitialReleaseAmount = async (
     amount: string,
     total: string,
@@ -151,47 +140,9 @@ export function SendVestingCard() {
     return undefined;
   };
 
-  const validateAddress = (address: string) => {
-    if (address.length === 0) {
-      return 'Address is required';
-    }
-    try {
-      new Address(address);
-    } catch (e) {
-      return `Invalid address: ${e}`;
-    }
-    return undefined;
-  };
-
-  const validateStartTime = (value: string) => {
-    if (value.length === 0) {
-      return 'Start timestamp is required';
-    }
-    try {
-      BigInt(value);
-    } catch (e) {
-      return 'Invalid timestamp';
-    }
-    if (isNaN(new Date(Number(value)).getTime())) {
-      return 'Invalid timestamp';
-    }
-
-    return undefined;
-  };
-
-  const validateTag = (value: string) => {
-    if (value.length > 127) {
-      return 'Tag is too long';
-    }
-    if (value.length === 0) {
-      return 'Tag is required';
-    }
-    return undefined;
-  };
-
   const validateForm = async () => {
     const totalAmountError = await validateAmount(totalAmount);
-    const initialRelaseAmountError = await validateInitialReleaseAmount(
+    const initialReleaseAmountError = await validateInitialReleaseAmount(
       initialReleaseAmount,
       totalAmount,
     );
@@ -201,7 +152,7 @@ export function SendVestingCard() {
 
     const newError = {
       totalAmount: totalAmountError,
-      initialReleaseAmount: initialRelaseAmountError,
+      initialReleaseAmount: initialReleaseAmountError,
       recipientAddress: recipientAddressError,
       startTimestamp: startTimestampError,
       tag: tagError,
@@ -319,7 +270,7 @@ export function SendVestingCard() {
               <Money
                 placeholder={Intl.t('send-vesting.amount-to-send')}
                 value={totalAmount.toString()}
-                onValueChange={(value) => handleTotalAmountChange(value.value)}
+                onValueChange={(event) => handleTotalAmountChange(event.value)}
                 error={error?.totalAmount}
               />
             </div>
@@ -346,8 +297,8 @@ export function SendVestingCard() {
               <Money
                 placeholder={Intl.t('send-vesting.initial-release-amount')}
                 value={initialReleaseAmount.toString()}
-                onValueChange={(value) =>
-                  handleInitialReleaseAmountChange(value.value)
+                onValueChange={(event) =>
+                  handleInitialReleaseAmountChange(event.value)
                 }
                 error={error?.initialReleaseAmount}
               />
