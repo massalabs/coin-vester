@@ -14,7 +14,7 @@ import { VESTING_SESSION_STORAGE_COST } from '../const/sc';
 import { fromnMAS, msToDateTimeWithTimeZone, msToTime } from '../utils';
 import { useWriteVestingSession } from '../utils/write-vesting-session';
 import {
-  validateAmount as _validateAmount,
+  validateAmount,
   validateAddress,
   validateStartTime,
   validateTag,
@@ -104,8 +104,11 @@ export function SendVestingCard() {
     createVestingSession(serializedArg.serialize(), totalAmountInMAS);
   };
 
-  const validateAmount = async (amount: string, allowZero: boolean = false) => {
-    const error = _validateAmount(amount, allowZero);
+  const validateAmountAndCheckBalance = async (
+    amount: string,
+    allowZero: boolean = false,
+  ) => {
+    const error = validateAmount(amount, allowZero);
     if (error) {
       return error;
     }
@@ -132,7 +135,7 @@ export function SendVestingCard() {
     amount: string,
     total: string,
   ) => {
-    const error = await validateAmount(amount, true);
+    const error = await validateAmountAndCheckBalance(amount, true);
     if (error) {
       return error;
     }
@@ -143,7 +146,7 @@ export function SendVestingCard() {
   };
 
   const validateForm = async () => {
-    const totalAmountError = await validateAmount(totalAmount);
+    const totalAmountError = await validateAmountAndCheckBalance(totalAmount);
     const initialReleaseAmountError = await validateInitialReleaseAmount(
       initialReleaseAmount,
       totalAmount,
@@ -195,7 +198,7 @@ export function SendVestingCard() {
   };
 
   const validateAmounts = async (total: string, initial: string) => {
-    const totalAmountError = await validateAmount(total);
+    const totalAmountError = await validateAmountAndCheckBalance(total);
     updateError('totalAmount', totalAmountError);
     const initialRelaseAmountError = await validateInitialReleaseAmount(
       initial,
