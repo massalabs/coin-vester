@@ -1,6 +1,12 @@
 import { Client, EOperationStatus, IEvent } from '@massalabs/massa-web3';
 import delay from 'delay';
+
 import { useAccountStore } from '../store';
+import {
+  MASSA_EXPLORER_URL,
+  MASSA_EXPLO_EXTENSION,
+  MASSA_EXPLO_URL,
+} from '../const/const';
 
 const WAIT_STATUS_TIMEOUT = 300_000;
 const STATUS_POLL_INTERVAL_MS = 1000;
@@ -76,4 +82,14 @@ async function checkForOperationStatus(
     throw new Error(`Waiting for operation ${opId} ended with errors`);
   }
   return false;
+}
+
+export function generateExplorerLink(opId: string): string {
+  const isMainnet = import.meta.env.VITE_IS_MAINNET === 'true';
+
+  const buildnetExplorerUrl = `${MASSA_EXPLO_URL}${opId}${MASSA_EXPLO_EXTENSION}`;
+  const mainnetExplorerUrl = `${MASSA_EXPLORER_URL}${opId}`;
+  const explorerUrl = isMainnet ? mainnetExplorerUrl : buildnetExplorerUrl;
+
+  return explorerUrl;
 }
