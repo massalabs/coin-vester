@@ -75,6 +75,10 @@ export function useWriteVestingSession(client?: Client) {
             variant="error"
           />,
         );
+      })
+      .finally(() => {
+        setIsPending(false);
+        setOpId(undefined);
       });
   }
 

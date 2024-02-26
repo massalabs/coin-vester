@@ -46,6 +46,7 @@ function VestingSessionCard(props: Props) {
     claimVestingSession,
     deleteVestingSession,
     isSuccess,
+    isError,
     isPending,
   } = useWriteVestingSession(massaClient);
   const [isClaiming, setIsClaiming] = useState(true);
@@ -57,7 +58,7 @@ function VestingSessionCard(props: Props) {
   }, [isSuccess, onUpdate]);
 
   useEffect(() => {
-    if (!isPending && opId && isClaiming) {
+    if (!isPending && (isSuccess || isError) && !opId && isClaiming) {
       setIsClaiming(false);
       setAmountToClaim('');
     }
