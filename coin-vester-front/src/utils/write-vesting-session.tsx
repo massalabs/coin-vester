@@ -59,9 +59,6 @@ export function useWriteVestingSession(client?: Client) {
             operationId={operationId}
             variant="success"
           />,
-          {
-            duration: 100000000,
-          },
         );
       })
       .catch(() => {
@@ -73,9 +70,6 @@ export function useWriteVestingSession(client?: Client) {
             operationId={operationId}
             variant="error"
           />,
-          {
-            duration: 100000000,
-          },
         );
       });
   }
