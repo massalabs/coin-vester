@@ -162,6 +162,14 @@ module.exports = {
           fontFamily: theme('fontFamily.Poppins'),
           lineHeight: '16px',
         },
+        '.mas-caption-underline': {
+          fontSize: '12px',
+          fontWeight: '400',
+          fontFamily: theme('fontFamily.Poppins'),
+          lineHeight: '16px',
+          textDecoration: 'underline',
+          fontStyle: 'normal',
+        },
       });
     }),
   ],

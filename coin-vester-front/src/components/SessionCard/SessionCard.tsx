@@ -10,7 +10,7 @@ import {
   MassaWallet,
   Spinner,
 } from '@massalabs/react-ui-kit';
-import { FiChevronDown, FiChevronUp, FiX } from 'react-icons/fi';
+import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
 import { BearbySvg } from '../ConnectMassaWallets/BearbySvg';
 
@@ -20,20 +20,15 @@ import { MoreInfoItem } from './MoreInfoItem';
 import { SUPPORTED_MASSA_WALLETS } from '../../const/connect-massa-wallet';
 import Intl from '../../i18n/i18n';
 import { VestingSession } from '../../types/types';
+import { useAccountStore } from '../../store';
 import {
   formatAddress,
   fromnMAS,
   msToDateWithTimeZone,
   msToTime,
 } from '../../utils';
-import { useAccountStore } from '../../store';
 import { useWriteVestingSession } from '../../utils/write-vesting-session';
-import { ShowLinkToExplorers } from '../ShowLinkToExplorers';
-import {
-  MASSA_EXPLORER_URL,
-  MASSA_EXPLO_EXTENSION,
-  MASSA_EXPLO_URL,
-} from '../../const/const';
+import { generateExplorerLink } from '../../utils/massa-utils';
 
 type Props = {
   vestingSession: VestingSession;
@@ -46,15 +41,27 @@ function VestingSessionCard(props: Props) {
   const { vestingInfo, availableAmount, claimedAmount } = vestingSession;
   const [error, setError] = useState<string | null>(null);
   const { currentProvider, connectedAccount, massaClient } = useAccountStore();
-  const { opId, claimVestingSession, deleteVestingSession, isSuccess } =
-    useWriteVestingSession(massaClient);
-  const [isClaiming, setIsClaiming] = useState(false);
+  const {
+    opId,
+    claimVestingSession,
+    deleteVestingSession,
+    isSuccess,
+    isPending,
+  } = useWriteVestingSession(massaClient);
+  const [isClaiming, setIsClaiming] = useState(true);
 
   useEffect(() => {
     if (isSuccess) {
       onUpdate();
     }
   }, [isSuccess, onUpdate]);
+
+  useEffect(() => {
+    if (!isPending && opId && isClaiming) {
+      setIsClaiming(false);
+      setAmountToClaim('');
+    }
+  }, [isPending, opId, isClaiming]);
 
   if (!vestingInfo) {
     console.error(
@@ -132,19 +139,8 @@ function VestingSessionCard(props: Props) {
     setError(error);
   };
 
-  const onCloseLink = () => {
-    setIsClaiming(false);
-    setAmountToClaim('');
-  };
-
   const accountProvider = currentProvider?.name();
   const accountName = connectedAccount?.name();
-
-  const isMainnet = import.meta.env.VITE_IS_MAINNET === 'true';
-
-  const buildnetExplorerUrl = `${MASSA_EXPLO_URL}${opId}${MASSA_EXPLO_EXTENSION}`;
-  const mainnetExplorerUrl = `${MASSA_EXPLORER_URL}${opId}`;
-  const explorerUrl = isMainnet ? mainnetExplorerUrl : buildnetExplorerUrl;
 
   return (
     <Card customClass="pb-0 mb-4">
@@ -175,18 +171,19 @@ function VestingSessionCard(props: Props) {
           <div className="flex justify-between w-full">
             <div className="flex flex-col w-2/3 mr-4">
               {isClaiming && opId ? (
-                <div className="flex flex-row">
-                  <ShowLinkToExplorers
-                    explorerUrl={explorerUrl}
-                    currentTxID={opId}
-                  />
-                  <Button
-                    variant="icon"
-                    onClick={onCloseLink}
-                    disabled={!isSuccess}
+                <div className="flex flex-row justify-between h-full items-center rounded-lg bg-secondary px-4">
+                  <div className="flex flex-row items-center">
+                    <Spinner customClass="mr-4" />
+                    <p className="mas-body">{Intl.t('steps.claiming')}</p>
+                  </div>
+                  <a
+                    href={generateExplorerLink(opId)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mas-menu-underline"
                   >
-                    {isSuccess ? <FiX /> : <Spinner />}
-                  </Button>
+                    {Intl.t('toast.explorer')}
+                  </a>
                 </div>
               ) : (
                 <Input
