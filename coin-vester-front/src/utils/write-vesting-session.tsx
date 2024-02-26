@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Client, fromMAS } from '@massalabs/massa-web3';
+import { Client } from '@massalabs/massa-web3';
 import { waitIncludedOperation } from './massa-utils';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
