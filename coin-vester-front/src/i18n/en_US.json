@@ -5,7 +5,7 @@
     "linear-duration-tooltip": "The duration over which the remaining amount is released, starting from the end of the cliff duration."
   },
   "steps": {
-    "claiming": "Claiming...",
+    "claiming": "Claim in progress...",
     "claim-success": "Successfully claimed",
     "claim-failed": "Claim failed",
     "deleting": "Deleting...",
@@ -13,7 +13,7 @@
     "delete-failed": "Deletion failed"
   },
   "toast": {
-    "explorer": "See operation in explorer"
+    "explorer": "view in explorer"
   },
   "connect-wallet": {
     "title": "Connect wallets",
