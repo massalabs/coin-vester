@@ -4,6 +4,7 @@ import { waitIncludedOperation } from './massa-utils';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
 import { SC_ADDRESS } from '../const/sc';
+import { OperationToast } from '../components/Toasts/OperationToast';
 
 interface ToasterMessage {
   pending: string;
@@ -31,6 +32,8 @@ export function useWriteVestingSession(client?: Client) {
     setIsSuccess(false);
     setIsError(false);
     setIsPending(false);
+    let operationId: string | undefined;
+
     client
       .smartContracts()
       .callSmartContract({
@@ -42,6 +45,7 @@ export function useWriteVestingSession(client?: Client) {
         fee: BigInt(0),
       })
       .then((opId) => {
+        operationId = opId;
         setOpId(opId);
         setIsPending(true);
         return waitIncludedOperation(opId);
@@ -49,12 +53,30 @@ export function useWriteVestingSession(client?: Client) {
       .then(() => {
         setIsSuccess(true);
         setIsPending(false);
-        toast.success(messages.success);
+        toast.custom(
+          <OperationToast
+            title={messages.success}
+            operationId={operationId}
+            variant="success"
+          />,
+          {
+            duration: 100000000,
+          },
+        );
       })
       .catch(() => {
         setIsError(true);
         setIsPending(false);
-        toast.error(messages.error);
+        toast.custom(
+          <OperationToast
+            title={messages.error}
+            operationId={operationId}
+            variant="error"
+          />,
+          {
+            duration: 100000000,
+          },
+        );
       });
   }
 
@@ -76,6 +98,7 @@ export function useWriteVestingSession(client?: Client) {
 
   return {
     opId,
+    isPending,
     isSuccess,
     isError,
     claimVestingSession,
