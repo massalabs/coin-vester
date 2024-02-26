@@ -14,6 +14,7 @@ import { VESTING_SESSION_STORAGE_COST } from '../const/sc';
 import { fromnMAS, msToDateTimeWithTimeZone, msToTime } from '../utils';
 import { useWriteVestingSession } from '../utils/write-vesting-session';
 import {
+  validateAmount as _validateAmount,
   validateAddress,
   validateStartTime,
   validateTag,
@@ -69,13 +70,16 @@ export function SendVestingCard() {
       fromMAS(addrInfo[0].candidate_balance) === fromMAS('0') &&
       addrInfo[0].candidate_roll_count === 0
     ) {
+      // TODO: Replace with a toast or a modal
       window.alert('The target address does not exist. Initializing it first.');
       // needs to send some funds to the target address
+      // TODO: Move to the useWriteVestingSession hook
       await client.wallet().sendTransaction({
         recipientAddress: recipient,
         amount: fromMAS('0.001000001'), // amount chosen to make sure the address exists and that we can detect it
         fee: fromMAS('0'),
       });
+      // TODO: Replace with a toast or a modal
       window.alert(
         'The initialization transaction has been sent. Please wait a few seconds and try again.',
       );
@@ -101,27 +105,25 @@ export function SendVestingCard() {
   };
 
   const validateAmount = async (amount: string, allowZero: boolean = false) => {
-    let amountInMAS = BigInt(0);
+    const error = _validateAmount(amount, allowZero);
+    if (error) {
+      return error;
+    }
+
     try {
-      amountInMAS = fromMAS(amount);
+      const amountInMAS = fromMAS(amount);
+      const balance = await connectedAccount?.balance();
+      const totalCost = amountInMAS + VESTING_SESSION_STORAGE_COST;
+      const finalBalance = fromMAS(balance?.finalBalance || 0);
+
+      if (connectedAccount && totalCost > finalBalance) {
+        return `You don't have enough balance to create this vesting session (total amount + ${fromnMAS(
+          VESTING_SESSION_STORAGE_COST,
+        )} of storage cost)`;
+      }
     } catch (e) {
-      return 'Invalid amount';
-    }
-    if (!amount) {
-      return 'Amount is required';
-    }
-    if (amountInMAS < 0 || (!allowZero && amountInMAS === 0n)) {
-      return 'Amount must be greater than 0';
-    }
-
-    const balance = await connectedAccount?.balance();
-    const totalCost = amountInMAS + VESTING_SESSION_STORAGE_COST;
-    const finalBalance = fromMAS(balance?.finalBalance || 0);
-
-    if (connectedAccount && totalCost > finalBalance) {
-      return `You don't have enough balance to create this vesting session (total amount + ${fromnMAS(
-        VESTING_SESSION_STORAGE_COST,
-      )} of storage cost)`;
+      // Should never happen. If it does, it's because the balance is corrupted
+      return 'Unknown error';
     }
     return undefined;
   };

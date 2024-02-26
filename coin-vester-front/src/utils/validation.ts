@@ -1,4 +1,23 @@
-import { Address } from '@massalabs/massa-web3';
+import { Address, fromMAS } from '@massalabs/massa-web3';
+
+export const validateAmount = (amount: string, allowZero: boolean = false) => {
+  if (!amount) {
+    return 'Amount is required';
+  }
+
+  let amountInMAS = BigInt(0);
+  try {
+    amountInMAS = fromMAS(amount);
+  } catch (e) {
+    return 'Invalid amount';
+  }
+
+  if (amountInMAS < 0 || (!allowZero && amountInMAS === 0n)) {
+    return 'Amount must be greater than 0';
+  }
+
+  return undefined;
+};
 
 export const validateAddress = (address: string) => {
   if (address.length === 0) {
