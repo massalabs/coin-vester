@@ -14,6 +14,12 @@ interface ToasterMessage {
   error: string;
 }
 
+type callSmartContractOptions = {
+  coins?: bigint;
+  fee?: bigint;
+  pendingToast?: boolean;
+};
+
 export function useWriteVestingSession(client?: Client) {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -24,8 +30,11 @@ export function useWriteVestingSession(client?: Client) {
     targetFunction: string,
     parameter: number[],
     messages: ToasterMessage,
-    coins: bigint = BigInt(0),
-    fee: bigint = BigInt(0),
+    {
+      coins = BigInt(0),
+      fee = BigInt(0),
+      pendingToast = false,
+    }: callSmartContractOptions = {},
   ) {
     if (!client) {
       throw new Error('Massa client not found');
@@ -52,6 +61,14 @@ export function useWriteVestingSession(client?: Client) {
         operationId = opId;
         setOpId(opId);
         setIsPending(true);
+        if (pendingToast) {
+          toast.custom(
+            <OperationToast
+              title={messages.pending}
+              operationId={operationId}
+            />,
+          );
+        }
         return waitIncludedOperation(opId);
       })
       .then(() => {
@@ -91,11 +108,18 @@ export function useWriteVestingSession(client?: Client) {
   }
 
   function deleteVestingSession(parameter: number[]) {
-    callSmartContract('clearVestingSession', parameter, {
-      pending: Intl.t('steps.deleting'),
-      success: Intl.t('steps.delete-success'),
-      error: Intl.t('steps.delete-failed'),
-    });
+    callSmartContract(
+      'clearVestingSession',
+      parameter,
+      {
+        pending: Intl.t('steps.deleting'),
+        success: Intl.t('steps.delete-success'),
+        error: Intl.t('steps.delete-failed'),
+      },
+      {
+        pendingToast: true,
+      },
+    );
   }
 
   function createVestingSession(parameter: number[], sendTotalAmount: bigint) {
@@ -107,7 +131,10 @@ export function useWriteVestingSession(client?: Client) {
         success: Intl.t('steps.create-success'),
         error: Intl.t('steps.create-failed'),
       },
-      sendTotalAmount + VESTING_SESSION_STORAGE_COST,
+      {
+        coins: sendTotalAmount + VESTING_SESSION_STORAGE_COST,
+        pendingToast: true,
+      },
     );
   }
 
