@@ -46,11 +46,8 @@ export default function HomePage() {
               Massa Station
             </a>
             .<br />
-            The section below displays the active vesting sessions targeting
-            your wallet address.
-            <br />
-            For each session, the currently available amount that can be claimed
-            is displayed as "Available to Claim".
+            The section below enables you to connect your wallet and, displays
+            the active vesting sessions targeting your wallet address.
           </h4>
         </section>
         <section className="mb-10">
