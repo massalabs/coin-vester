@@ -17,7 +17,7 @@ interface ToasterMessage {
 type callSmartContractOptions = {
   coins?: bigint;
   fee?: bigint;
-  pendingToast?: boolean;
+  showInProgressToast?: boolean;
 };
 
 export function useWriteVestingSession(client?: Client) {
@@ -33,7 +33,7 @@ export function useWriteVestingSession(client?: Client) {
     {
       coins = BigInt(0),
       fee = BigInt(0),
-      pendingToast = false,
+      showInProgressToast: pendingToast = false,
     }: callSmartContractOptions = {},
   ) {
     if (!client) {
@@ -61,6 +61,7 @@ export function useWriteVestingSession(client?: Client) {
         operationId = opId;
         setOpId(opId);
         setIsPending(true);
+        // TODO: Toasts should not be handled in hooks.
         if (pendingToast) {
           toast.custom(
             <OperationToast
@@ -74,6 +75,7 @@ export function useWriteVestingSession(client?: Client) {
       .then(() => {
         setIsSuccess(true);
         setIsPending(false);
+        // TODO: Toasts should not be handled in hooks.
         toast.custom(
           <OperationToast
             title={messages.success}
@@ -85,6 +87,7 @@ export function useWriteVestingSession(client?: Client) {
       .catch(() => {
         setIsError(true);
         setIsPending(false);
+        // TODO: Toasts should not be handled in hooks.
         toast.custom(
           <OperationToast
             title={messages.error}
@@ -113,7 +116,7 @@ export function useWriteVestingSession(client?: Client) {
         error: Intl.t('steps.delete-failed'),
       },
       {
-        pendingToast: true,
+        showInProgressToast: true,
       },
     );
   }
@@ -129,7 +132,7 @@ export function useWriteVestingSession(client?: Client) {
       },
       {
         coins: sendTotalAmount + VESTING_SESSION_STORAGE_COST,
-        pendingToast: true,
+        showInProgressToast: true,
       },
     );
   }
