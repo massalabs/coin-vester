@@ -38,6 +38,11 @@ export function SendVestingConfirmationModal(
     handleSend,
   } = props;
 
+  const handleConfirmation = async () => {
+    await handleSend();
+    onClose();
+  };
+
   return (
     <PopupModal fullMode={true} onClose={onClose}>
       <PopupModalHeader customClassHeader="items-center pt-5">
@@ -78,7 +83,7 @@ export function SendVestingConfirmationModal(
         <Button onClick={onClose}>
           {Intl.t('send-vesting.confirm-modal.cancel')}
         </Button>
-        <Button onClick={handleSend}>
+        <Button onClick={handleConfirmation}>
           {Intl.t('send-vesting.confirm-modal.confirm-send')}
         </Button>
       </PopupModalFooter>
