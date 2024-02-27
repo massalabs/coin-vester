@@ -49,7 +49,6 @@ function VestingSessionCard(props: Props) {
     isError,
     isPending,
   } = useWriteVestingSession(massaClient);
-  const [isClaiming, setIsClaiming] = useState(true);
 
   useEffect(() => {
     if (isSuccess) {
@@ -58,11 +57,10 @@ function VestingSessionCard(props: Props) {
   }, [isSuccess, onUpdate]);
 
   useEffect(() => {
-    if (!isPending && (isSuccess || isError) && !opId && isClaiming) {
-      setIsClaiming(false);
+    if (isSuccess || isError) {
       setAmountToClaim('');
     }
-  }, [isPending, opId, isClaiming]);
+  }, [isSuccess, isError]);
 
   if (!vestingInfo) {
     console.error(
@@ -123,7 +121,6 @@ function VestingSessionCard(props: Props) {
     serializedArg.addU64(vestingSession.id);
     serializedArg.addU64(amount);
     let serialized = serializedArg.serialize();
-    setIsClaiming(true);
     claimVestingSession(serialized);
   };
 
@@ -171,7 +168,7 @@ function VestingSessionCard(props: Props) {
         {claimedAmount !== vestingInfo.totalAmount && (
           <div className="flex justify-between w-full">
             <div className="flex flex-col w-2/3 mr-4">
-              {isClaiming && opId ? (
+              {isPending && opId ? (
                 <div className="flex flex-row justify-between h-full items-center rounded-lg bg-secondary px-4">
                   <div className="flex flex-row items-center">
                     <Spinner customClass="mr-4" />
