@@ -18,12 +18,14 @@ export function OperationToast({
     error: FiAlertCircle,
     default: FiInfo,
   };
+  const colorVariants = {
+    success: 'text-s-success bg-s-success',
+    error: 'text-s-error bg-s-error',
+    default: '',
+  };
 
   const Icon = iconVariants[variant ?? 'default'];
-  const color =
-    variant === 'success'
-      ? 'text-s-success bg-s-success'
-      : 'text-s-error bg-s-error';
+  const color = colorVariants[variant ?? 'default'];
 
   return (
     <div className="flex flex-row bg-primary p-2 rounded-xl text-center text-f-primary items-center">
