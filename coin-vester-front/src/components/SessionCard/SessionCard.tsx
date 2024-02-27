@@ -228,12 +228,12 @@ function VestingSessionCard(props: Props) {
           />
           <MoreInfoItem
             title="Initial Release"
-            tooltip="The amount of MAS that is released at the start date."
+            tooltip="The amount of MAS released on the start date."
             value={fromnMAS(initialReleaseAmount)}
           />
           <MoreInfoItem
             title="Cliff Duration"
-            tooltip="The duration after which the linear release starts, starting from the start date."
+            tooltip="The duration during which your tokens are locked before being vested."
             value={msToTime(Number(cliffDuration))}
             valueLabel={cliffDuration.toString() + ' ms'}
           />
