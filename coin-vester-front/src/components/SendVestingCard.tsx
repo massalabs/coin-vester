@@ -199,11 +199,11 @@ export function SendVestingCard() {
   const validateAmounts = async (total: string, initial: string) => {
     const totalAmountError = await validateAmountAndCheckBalance(total);
     updateError('totalAmount', totalAmountError);
-    const initialRelaseAmountError = await validateInitialReleaseAmount(
+    const initialReleaseAmountError = await validateInitialReleaseAmount(
       initial,
       total,
     );
-    updateError('initialReleaseAmount', initialRelaseAmountError);
+    updateError('initialReleaseAmount', initialReleaseAmountError);
   };
 
   const handleTotalAmountChange = async (value: string) => {
