@@ -134,10 +134,15 @@ export function SendVestingCard() {
     amount: string,
     total: string,
   ) => {
-    const error = await validateAmountAndCheckBalance(amount, true);
+    let error = await validateAmountAndCheckBalance(amount, true);
     if (error) {
       return error;
     }
+    error = validateAmount(total, true);
+    if (error) {
+      return error;
+    }
+
     if (fromMAS(amount) > fromMAS(total)) {
       return 'Initial release amount must be less than total amount';
     }
