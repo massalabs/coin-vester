@@ -6,8 +6,8 @@ import {
   AccordionCategory,
   AccordionContent,
   Button,
-  Input,
   MassaWallet,
+  Money,
   Spinner,
 } from '@massalabs/react-ui-kit';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
@@ -102,7 +102,6 @@ function VestingSessionCard(props: Props) {
       return null;
     } catch (e) {
       if (e instanceof Error) {
-        console.error('Error parsing amount: ', e);
         return 'Please enter a valid MAS value';
       }
       return 'An unexpected error occurred';
@@ -111,8 +110,8 @@ function VestingSessionCard(props: Props) {
 
   const handleClaim = async () => {
     const error = checkValidAmount(amountToClaim);
+    setError(error);
     if (error) {
-      setError(error);
       return;
     }
 
@@ -129,12 +128,6 @@ function VestingSessionCard(props: Props) {
     serializedArg.addU64(vestingSession.id);
     let serialized = serializedArg.serialize();
     deleteVestingSession(serialized);
-  };
-
-  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setAmountToClaim(e.target.value);
-    const error = checkValidAmount(e.target.value);
-    setError(error);
   };
 
   const accountProvider = currentProvider?.name();
@@ -184,21 +177,15 @@ function VestingSessionCard(props: Props) {
                   </a>
                 </div>
               ) : (
-                <Input
-                  type="text"
+                <Money
                   placeholder="Amount to claim"
-                  value={amountToClaim}
-                  onChange={handleAmountChange}
+                  value={amountToClaim.toString()}
+                  onValueChange={(event) => setAmountToClaim(event.value)}
                   error={error ? error : undefined}
-                  customClass="bg-primary"
                 />
               )}
             </div>
-            <Button
-              onClick={handleClaim}
-              disabled={!!error}
-              customClass="w-1/3"
-            >
+            <Button onClick={handleClaim} customClass="w-1/3">
               Claim
             </Button>
           </div>
