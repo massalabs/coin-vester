@@ -83,7 +83,6 @@ export function SendVestingCard() {
       window.alert(
         'The initialization transaction has been sent. Please wait a few seconds and try again.',
       );
-      return;
     }
 
     const totalAmountInMAS = fromMAS(totalAmount);

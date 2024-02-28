@@ -41,7 +41,7 @@ export default function HomePage() {
           {!connected ? (
             <Card>
               <h3 className="mas-h3">
-                Connect a wallet to view your vesting sessions
+                Connect a wallet to send vesting sessions
               </h3>
             </Card>
           ) : (
