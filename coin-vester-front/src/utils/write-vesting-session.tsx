@@ -53,7 +53,6 @@ export function useWriteVestingSession(client?: Client) {
         targetAddress: SC_ADDRESS,
         targetFunction,
         parameter,
-        maxGas: BigInt(2550000),
         coins,
         fee,
       })
