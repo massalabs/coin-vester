@@ -6,7 +6,11 @@ import Intl from '../i18n/i18n';
 
 import { OperationToast } from '../components/Toasts/OperationToast';
 
-import { SC_ADDRESS, VESTING_SESSION_STORAGE_COST } from '../const/sc';
+import {
+  DEFAULT_OP_FEES,
+  SC_ADDRESS,
+  VESTING_SESSION_STORAGE_COST,
+} from '../const/sc';
 
 interface ToasterMessage {
   pending: string;
@@ -20,6 +24,14 @@ type callSmartContractOptions = {
   showInProgressToast?: boolean;
 };
 
+let defaultOpFees: bigint;
+
+try {
+  defaultOpFees = BigInt(DEFAULT_OP_FEES);
+} catch (error) {
+  defaultOpFees = BigInt(0);
+}
+
 export function useWriteVestingSession(client?: Client) {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -32,7 +44,7 @@ export function useWriteVestingSession(client?: Client) {
     messages: ToasterMessage,
     {
       coins = BigInt(0),
-      fee = BigInt(0),
+      fee = defaultOpFees,
       showInProgressToast: pendingToast = false,
     }: callSmartContractOptions = {},
   ) {
