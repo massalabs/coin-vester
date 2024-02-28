@@ -9,6 +9,7 @@ import {
   MassaWallet,
   Money,
   Spinner,
+  Tooltip,
 } from '@massalabs/react-ui-kit';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
@@ -191,9 +192,18 @@ function VestingSessionCard(props: Props) {
           </div>
         )}
         {claimedAmount === vestingInfo.totalAmount && (
-          <Button variant="danger" onClick={handleDelete}>
-            Delete
-          </Button>
+          <div className="flex flex-col w-full">
+            <Button variant="danger" onClick={handleDelete}>
+              {Intl.t('claim.delete.button')}
+            </Button>
+            <div className="flex items-center flew-col mt-1">
+              <p>{Intl.t('claim.delete.text')}</p>
+              <Tooltip
+                customClass="ml-4"
+                body={Intl.t('claim.delete.tooltip')}
+              ></Tooltip>
+            </div>
+          </div>
         )}
       </div>
       <hr className="color-primary" />

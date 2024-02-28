@@ -79,5 +79,12 @@
       "wrong-chain-massa-station-tooltip": "Switch to {network} in top-right corner of Station's homepage",
       "wrong-chain-bearby-tooltip": "Switch to {network} in top-left corner of Bearby's extension"
     }
+  },
+  "claim": {
+    "delete": {
+      "tooltip": "By deleting it, you will get back the storage fees associated to your session in the smart contract.",
+      "text": "You vesting session is finished, you can delete it.",
+      "button": "Delete"
+    }
   }
 }
