@@ -186,7 +186,11 @@ function VestingSessionCard(props: Props) {
                 />
               )}
             </div>
-            <Button onClick={handleClaim} customClass="w-1/3">
+            <Button
+              onClick={handleClaim}
+              customClass="w-1/3"
+              disabled={isPending && !!opId}
+            >
               Claim
             </Button>
           </div>
