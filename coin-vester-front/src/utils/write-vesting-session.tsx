@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Client } from '@massalabs/massa-web3';
-import { waitIncludedOperation } from './massa-utils';
+import { Client, EOperationStatus } from '@massalabs/massa-web3';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
 
@@ -11,11 +10,13 @@ import {
   SC_ADDRESS,
   VESTING_SESSION_STORAGE_COST,
 } from '../const/sc';
+import { logSmartContractEvents } from './massa-utils';
 
 interface ToasterMessage {
   pending: string;
   success: string;
   error: string;
+  timeout?: string;
 }
 
 type callSmartContractOptions = {
@@ -45,19 +46,20 @@ export function useWriteVestingSession(client?: Client) {
     {
       coins = BigInt(0),
       fee = defaultOpFees,
-      showInProgressToast: pendingToast = false,
+      showInProgressToast = false,
     }: callSmartContractOptions = {},
   ) {
     if (!client) {
       throw new Error('Massa client not found');
     }
     if (isPending) {
-      return;
+      throw new Error('Operation is already pending');
     }
     setIsSuccess(false);
     setIsError(false);
     setIsPending(false);
     let operationId: string | undefined;
+    let toastId: string | undefined;
 
     client
       .smartContracts()
@@ -72,21 +74,32 @@ export function useWriteVestingSession(client?: Client) {
         operationId = opId;
         setOpId(opId);
         setIsPending(true);
-        // TODO: Toasts should not be handled in hooks.
-        if (pendingToast) {
-          toast.custom(
+        if (showInProgressToast) {
+          toastId = toast.custom(
             <OperationToast
               title={messages.pending}
               operationId={operationId}
             />,
+            {
+              duration: Infinity,
+            },
           );
         }
-        return waitIncludedOperation(opId);
+        return client
+          .smartContracts()
+          .awaitMultipleRequiredOperationStatus(opId, [
+            EOperationStatus.SPECULATIVE_ERROR,
+            EOperationStatus.FINAL_ERROR,
+            EOperationStatus.FINAL_SUCCESS,
+          ]);
       })
-      .then(() => {
+      .then((status: EOperationStatus) => {
+        if (status !== EOperationStatus.FINAL_SUCCESS) {
+          throw new Error('Operation failed', { cause: { status } });
+        }
         setIsSuccess(true);
         setIsPending(false);
-        // TODO: Toasts should not be handled in hooks.
+        toast.dismiss(toastId);
         toast.custom(
           <OperationToast
             title={messages.success}
@@ -95,17 +108,43 @@ export function useWriteVestingSession(client?: Client) {
           />,
         );
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error(error);
+        toast.dismiss(toastId);
         setIsError(true);
         setIsPending(false);
-        // TODO: Toasts should not be handled in hooks.
-        toast.custom(
-          <OperationToast
-            title={messages.error}
-            operationId={operationId}
-            variant="error"
-          />,
-        );
+
+        if (!operationId) {
+          console.error('Operation ID not found');
+          toast.custom(
+            <OperationToast title={messages.error} variant="error" />,
+          );
+          return;
+        }
+
+        if (
+          [
+            EOperationStatus.FINAL_ERROR,
+            EOperationStatus.SPECULATIVE_ERROR,
+          ].includes(error.cause?.status)
+        ) {
+          toast.custom(
+            <OperationToast
+              title={messages.error}
+              operationId={operationId}
+              variant="error"
+            />,
+          );
+          logSmartContractEvents(client, operationId);
+        } else {
+          toast.custom(
+            <OperationToast
+              title={messages.timeout || Intl.t('steps.failed-timeout')}
+              operationId={operationId}
+              variant="error"
+            />,
+          );
+        }
       });
   }
 
