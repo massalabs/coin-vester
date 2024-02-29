@@ -82,7 +82,7 @@ export function SendVestingCard() {
         recipientAddress: recipient,
         // amount chosen to make sure the address exists and that we can detect it:
         amount: BASE_ACCOUNT_CREATION_COST + DEFAULT_OP_FEES,
-        fee: fromMAS('0'),
+        fee: DEFAULT_OP_FEES,
       });
       // TODO: Replace with a toast or a modal
       window.alert(
