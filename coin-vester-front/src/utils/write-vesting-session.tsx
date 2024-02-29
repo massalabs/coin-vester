@@ -25,14 +25,6 @@ type callSmartContractOptions = {
   showInProgressToast?: boolean;
 };
 
-let defaultOpFees: bigint;
-
-try {
-  defaultOpFees = BigInt(DEFAULT_OP_FEES);
-} catch (error) {
-  defaultOpFees = BigInt(0);
-}
-
 export function useWriteVestingSession(client?: Client) {
   const [isPending, setIsPending] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -45,7 +37,7 @@ export function useWriteVestingSession(client?: Client) {
     messages: ToasterMessage,
     {
       coins = BigInt(0),
-      fee = defaultOpFees,
+      fee = DEFAULT_OP_FEES,
       showInProgressToast = false,
     }: callSmartContractOptions = {},
   ) {

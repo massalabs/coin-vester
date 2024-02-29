@@ -1,5 +1,9 @@
 import { useState } from 'react';
-import { Args, fromMAS } from '@massalabs/massa-web3';
+import {
+  Args,
+  BASE_ACCOUNT_CREATION_COST,
+  fromMAS,
+} from '@massalabs/massa-web3';
 import { Button, Input, Money } from '@massalabs/react-ui-kit';
 
 import { Card } from './Card';
@@ -10,7 +14,7 @@ import { useAccountStore } from '../store';
 
 import Intl from '../i18n/i18n';
 
-import { VESTING_SESSION_STORAGE_COST } from '../const/sc';
+import { DEFAULT_OP_FEES, VESTING_SESSION_STORAGE_COST } from '../const/sc';
 import { fromnMAS, msToDateTimeWithTimeZone, msToTime } from '../utils';
 import { useWriteVestingSession } from '../utils/write-vesting-session';
 import {
@@ -76,7 +80,8 @@ export function SendVestingCard() {
       // TODO: Move to the useWriteVestingSession hook
       await client.wallet().sendTransaction({
         recipientAddress: recipient,
-        amount: fromMAS('0.001000001'), // amount chosen to make sure the address exists and that we can detect it
+        // amount chosen to make sure the address exists and that we can detect it:
+        amount: BASE_ACCOUNT_CREATION_COST + DEFAULT_OP_FEES,
         fee: fromMAS('0'),
       });
       // TODO: Replace with a toast or a modal
