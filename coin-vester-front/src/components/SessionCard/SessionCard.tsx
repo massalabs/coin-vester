@@ -165,7 +165,7 @@ function VestingSessionCard(props: Props) {
               {isPending && opId ? (
                 <div className="flex flex-row justify-between h-full items-center rounded-lg bg-secondary px-4">
                   <div className="flex flex-row items-center">
-                    <Spinner customClass="mr-4" />
+                    <Spinner customClass="mr-4" color="tertiary" />
                     <p className="mas-body">{Intl.t('steps.claiming')}</p>
                   </div>
                   <a
