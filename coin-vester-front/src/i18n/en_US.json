@@ -13,7 +13,8 @@
     "delete-failed": "Deletion failed",
     "creating": "Creating...",
     "create-success": "Successfully created",
-    "create-failed": "Creation failed"
+    "create-failed": "Creation failed",
+    "failed-timeout": "Operation failed due to timeout, please retry with more fees."
   },
   "send-vesting": {
     "tag": "Tag",
