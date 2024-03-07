@@ -7,8 +7,6 @@ import {
 
 import { Toast } from '@massalabs/react-ui-kit';
 
-import { STORAGE_KEY_THEME } from './const/const';
-
 import HomePage from './pages/HomePage';
 import LegacyPage from './pages/LegacyPage';
 import SendPage from './pages/SendPage';
@@ -16,7 +14,7 @@ import SendPage from './pages/SendPage';
 function App() {
   return (
     <Router>
-      <Toast storageKey={STORAGE_KEY_THEME} />
+      <Toast />
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/send" element={<SendPage />} />
