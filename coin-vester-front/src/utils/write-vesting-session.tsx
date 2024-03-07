@@ -1,5 +1,10 @@
 import { useState } from 'react';
-import { Client, EOperationStatus, ICallData } from '@massalabs/massa-web3';
+import {
+  Client,
+  EOperationStatus,
+  ICallData,
+  MAX_GAS_CALL,
+} from '@massalabs/massa-web3';
 import { toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
 
@@ -24,6 +29,10 @@ type callSmartContractOptions = {
   fee?: bigint;
   showInProgressToast?: boolean;
 };
+
+function minBigInt(a: bigint, b: bigint) {
+  return a < b ? a : b;
+}
 
 export function useWriteVestingSession(client?: Client) {
   const [isPending, setIsPending] = useState(false);
@@ -66,7 +75,7 @@ export function useWriteVestingSession(client?: Client) {
       .readSmartContract(callData)
       .then((response) => {
         const gasCost = BigInt(response.info.gas_cost);
-        return gasCost + (gasCost * 20n) / 100n;
+        return minBigInt(gasCost + (gasCost * 20n) / 100n, MAX_GAS_CALL);
       })
       .then((maxGas: bigint) => {
         callData.maxGas = maxGas;
