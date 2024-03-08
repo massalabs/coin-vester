@@ -5,7 +5,7 @@ import {
   ICallData,
   MAX_GAS_CALL,
 } from '@massalabs/massa-web3';
-import { toast } from '@massalabs/react-ui-kit';
+import { ToastContent, toast } from '@massalabs/react-ui-kit';
 import Intl from '../i18n/i18n';
 
 import { OperationToast } from '../components/Toasts/OperationToast';
@@ -86,11 +86,15 @@ export function useWriteVestingSession(client?: Client) {
         setOpId(opId);
         setIsPending(true);
         if (showInProgressToast) {
-          toastId = toast.custom(
-            <OperationToast
-              title={messages.pending}
-              operationId={operationId}
-            />,
+          toastId = toast.loading(
+            (t) => (
+              <ToastContent t={t}>
+                <OperationToast
+                  title={messages.pending}
+                  operationId={operationId}
+                />
+              </ToastContent>
+            ),
             {
               duration: Infinity,
             },
@@ -111,13 +115,14 @@ export function useWriteVestingSession(client?: Client) {
         setIsSuccess(true);
         setIsPending(false);
         toast.dismiss(toastId);
-        toast.custom(
-          <OperationToast
-            title={messages.success}
-            operationId={operationId}
-            variant="success"
-          />,
-        );
+        toast.success((t) => (
+          <ToastContent t={t}>
+            <OperationToast
+              title={messages.success}
+              operationId={operationId}
+            />
+          </ToastContent>
+        ));
       })
       .catch((error) => {
         console.error(error);
@@ -127,9 +132,11 @@ export function useWriteVestingSession(client?: Client) {
 
         if (!operationId) {
           console.error('Operation ID not found');
-          toast.custom(
-            <OperationToast title={messages.error} variant="error" />,
-          );
+          toast.error((t) => (
+            <ToastContent t={t}>
+              <OperationToast title={messages.error} />
+            </ToastContent>
+          ));
           return;
         }
 
@@ -139,22 +146,24 @@ export function useWriteVestingSession(client?: Client) {
             EOperationStatus.SPECULATIVE_ERROR,
           ].includes(error.cause?.status)
         ) {
-          toast.custom(
-            <OperationToast
-              title={messages.error}
-              operationId={operationId}
-              variant="error"
-            />,
-          );
+          toast.error((t) => (
+            <ToastContent t={t}>
+              <OperationToast
+                title={messages.error}
+                operationId={operationId}
+              />
+            </ToastContent>
+          ));
           logSmartContractEvents(client, operationId);
         } else {
-          toast.custom(
-            <OperationToast
-              title={messages.timeout || Intl.t('steps.failed-timeout')}
-              operationId={operationId}
-              variant="error"
-            />,
-          );
+          toast.error((t) => (
+            <ToastContent t={t}>
+              <OperationToast
+                title={messages.timeout || Intl.t('steps.failed-timeout')}
+                operationId={operationId}
+              />
+            </ToastContent>
+          ));
         }
       });
   }
