@@ -2,14 +2,13 @@ import { Address, Args, Client } from '@massalabs/massa-web3';
 import { VestingSession } from '../types/types';
 import { SC_ADDRESS } from '../const/sc';
 import { useCallback, useState } from 'react';
-import { IAccount } from '@massalabs/wallet-provider';
 
 export function useReadVestingSessions(client?: Client) {
   const [vestingSessions, setVestingSessions] = useState<VestingSession[]>([]);
   const [error, setError] = useState<string | null>();
 
   const getAccountVestingSessions = useCallback(
-    async (account: IAccount) => {
+    async (accountAddress: Address) => {
       try {
         setError(null);
 
@@ -19,7 +18,7 @@ export function useReadVestingSessions(client?: Client) {
         }
 
         // get all the addresses of the user from their wallet
-        let userAddresses = [new Address(account.address())];
+        let userAddresses = [accountAddress];
 
         // get all the vesting sessions of the user
         let addrInfo = await client.publicApi().getAddresses([SC_ADDRESS]);

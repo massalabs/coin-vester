@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useState } from 'react';
 import { Address } from '@massalabs/massa-web3';
 
 import VestingSessionCard from '../components/SessionCard/SessionCard';
@@ -7,8 +7,9 @@ import { Card } from '../components/Card';
 
 import { useAccountStore } from '../store';
 import { useReadVestingSessions } from '../utils/read-vesting-sessions';
+import { Button, Input } from '@massalabs/react-ui-kit';
 
-export default function HomePage() {
+export default function ByAddressPage() {
   const {
     connectedAccount,
     massaClient: client,
@@ -16,16 +17,38 @@ export default function HomePage() {
   } = useAccountStore();
   const { vestingSessions, error, getAccountVestingSessions } =
     useReadVestingSessions(client);
+  const [searchValue, setSearchValue] = useState('');
+  const [searchError, setSearchError] = useState<string | undefined>();
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value);
+    setSearchError(undefined);
+    try {
+      new Address(e.target.value);
+    } catch (exeption) {
+      setSearchError('Invalid address');
+    }
+  };
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateVestingSessions();
+  };
 
   const updateVestingSessions = useCallback(async () => {
-    if (connectedAccount && client) {
-      await getAccountVestingSessions(new Address(connectedAccount.address()));
+    if (searchError) {
+      return;
     }
-  }, [connectedAccount, client, getAccountVestingSessions]);
 
-  useEffect(() => {
-    updateVestingSessions();
-  }, [connectedAccount, updateVestingSessions]);
+    if (connectedAccount && client) {
+      try {
+        const address = new Address(searchValue);
+        await getAccountVestingSessions(address);
+      } catch (exeption) {
+        setSearchError('Invalid address');
+      }
+    }
+  }, [connectedAccount, client, getAccountVestingSessions, searchValue]);
 
   const connected = !!connectedAccount && !!currentProvider;
 
@@ -57,6 +80,20 @@ export default function HomePage() {
           <Card>
             <ConnectMassaWallet />
           </Card>
+        </section>
+        <section className="mb-10">
+          {connected && (
+            <form onSubmit={handleSearchSubmit}>
+              <Input
+                type="text"
+                value={searchValue}
+                onChange={handleSearchChange}
+                placeholder="Search..."
+                error={searchError}
+              />
+              <Button type="submit">Search</Button>
+            </form>
+          )}
         </section>
         <section className="mb-10">
           {error && (
