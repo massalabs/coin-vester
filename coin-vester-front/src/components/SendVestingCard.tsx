@@ -74,7 +74,6 @@ export function SendVestingCard() {
       fromMAS(addrInfo[0].candidate_balance) === fromMAS('0') &&
       addrInfo[0].candidate_roll_count === 0
     ) {
-      // TODO: Replace with a toast or a modal
       window.alert('The target address does not exist. Initializing it first.');
       // needs to send some funds to the target address
       // TODO: Move to the useWriteVestingSession hook
@@ -84,7 +83,6 @@ export function SendVestingCard() {
         amount: BASE_ACCOUNT_CREATION_COST + DEFAULT_OP_FEES,
         fee: DEFAULT_OP_FEES,
       });
-      // TODO: Replace with a toast or a modal
       window.alert(
         'The initialization transaction has been sent. Please wait a few seconds and try again.',
       );
