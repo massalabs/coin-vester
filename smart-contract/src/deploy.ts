@@ -56,7 +56,7 @@ const __dirname = path.dirname(path.dirname(__filename));
       // Additional smart contracts can be added here for deployment
     ],
     chainId,
-    0n, // fees for deployment
+    fromMAS('0.01'), // fees for deployment
     MAX_GAS_DEPLOYMENT, // max gas for deployment
     true, // if true, waits for the first event before returning
   );

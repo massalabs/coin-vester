@@ -99,10 +99,10 @@ export function createVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   Storage.set(getVestingInfoKey(vInfo.toAddr, sessionId), args);
 
   // initialize the claimed coin counter
-  const intialCounterValue: u64 = 0;
+  const initialCounterValue: u64 = 0;
   Storage.set(
     getClaimedAmountKey(vInfo.toAddr, sessionId),
-    new Args().add(intialCounterValue).serialize(),
+    new Args().add(initialCounterValue).serialize(),
   );
 
   // consolidate payment
@@ -126,7 +126,9 @@ export function claimVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   const sessionId = deser.nextU64().expect('Missing session_id argument.');
   const amount = deser.nextU64().expect('Missing amount argument.');
   if (deser.offset !== args.length) {
-    throw new Error(`Extra data in serialized args (len: ${args.length}) after session id and amount, aborting...`);
+    throw new Error(
+      `Extra data in serialized args (len: ${args.length}) after session id and amount, aborting...`,
+    );
   }
 
   // get current timestamp
@@ -178,7 +180,9 @@ export function clearVestingSession(args: StaticArray<u8>): StaticArray<u8> {
   let deser = new Args(args);
   const sessionId = deser.nextU64().expect('Missing session_id argument.');
   if (deser.offset !== args.length) {
-    throw new Error(`Extra data in serialized args (len: ${args.length}) after session id, aborting...`);
+    throw new Error(
+      `Extra data in serialized args (len: ${args.length}) after session id, aborting...`,
+    );
   }
 
   // get vesting data
