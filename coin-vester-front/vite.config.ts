@@ -10,5 +10,11 @@ export default ({ mode }) => {
 
   return defineConfig({
     plugins: [react(), svgr()],
+    server: {
+      fs: {
+        // to allow server ui kit asset like font files
+        allow: ['../..'],
+      },
+    },
   });
 };
