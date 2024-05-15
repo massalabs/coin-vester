@@ -16,12 +16,11 @@
     "prepare": "cd .. && husky coin-vester-front/.husky"
   },
   "dependencies": {
-    "@massalabs/massa-web3": "^3.0.4-dev",
-    "@massalabs/react-ui-kit": "^0.0.4-dev",
-    "@massalabs/wallet-provider": "^1.5.3-dev",
+    "@massalabs/massa-web3": "^4.0.2-dev",
+    "@massalabs/react-ui-kit": "^0.0.4-next.20240515224719",
+    "@massalabs/wallet-provider": "^2.0.1-dev",
     "currency.js": "^2.0.4",
     "delay": "^6.0.0",
-    "dot-object": "^2.1.4",
     "esbuild": "0.17.19",
     "moment-timezone": "^0.5.45",
     "react": "^18.2.0",
