@@ -13,15 +13,10 @@ import {
 } from '@massalabs/react-ui-kit';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
-import { BearbySvg } from '../ConnectMassaWallets/BearbySvg';
-
 import { Card } from '../Card';
 import { MoreInfoItem } from './MoreInfoItem';
 
-import { SUPPORTED_MASSA_WALLETS } from '../../const/connect-massa-wallet';
-import Intl from '../../i18n/i18n';
 import { VestingSession } from '../../types/types';
-import { useAccountStore } from '../../store';
 import {
   formatAddress,
   fromnMAS,
@@ -29,7 +24,11 @@ import {
   msToTime,
 } from '../../utils';
 import { useWriteVestingSession } from '../../utils/write-vesting-session';
-import { generateExplorerLink } from '../../utils/massa-utils';
+import { useAccountStore } from '@massalabs/react-ui-kit/src/lib/ConnectMassaWallets/store';
+import { BearbySvg } from '@massalabs/react-ui-kit/src/lib/ConnectMassaWallets/components/BearbySvg';
+import { SUPPORTED_MASSA_WALLETS } from '@massalabs/react-ui-kit/src/lib/massa-react/const';
+import { generateExplorerLink } from '@massalabs/react-ui-kit/src/lib/massa-react/utils';
+import Intl from '../../i18n/i18n';
 
 type Props = {
   vestingSession: VestingSession;

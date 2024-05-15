@@ -1,9 +1,13 @@
 import { useCallback, useEffect } from 'react';
 import VestingSessionCard from '../components/SessionCard/SessionCard';
-import { ConnectMassaWallet } from '../components/ConnectMassaWallets/ConnectMassaWallet';
-import { useAccountStore } from '../store';
 import { Card } from '../components/Card';
 import { useReadVestingSessions } from '../utils/read-vesting-sessions';
+import {
+  ConnectMassaWallet,
+  useAccountStore,
+} from '@massalabs/react-ui-kit/src/lib/ConnectMassaWallets';
+import { Client } from '@massalabs/massa-web3';
+import { IAccount } from '@massalabs/wallet-provider';
 
 export default function HomePage() {
   const {
@@ -12,11 +16,11 @@ export default function HomePage() {
     currentProvider,
   } = useAccountStore();
   const { vestingSessions, error, getAccountVestingSessions } =
-    useReadVestingSessions(client);
+    useReadVestingSessions(client as unknown as Client);
 
   const updateVestingSessions = useCallback(async () => {
     if (connectedAccount && client) {
-      await getAccountVestingSessions(connectedAccount);
+      await getAccountVestingSessions(connectedAccount as unknown as IAccount);
     }
   }, [connectedAccount, client, getAccountVestingSessions]);
 
