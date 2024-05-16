@@ -16,5 +16,8 @@ export default ({ mode }) => {
         allow: ['../..'],
       },
     },
+    optimizeDeps: {
+      include: ['react-dom'],
+    },
   });
 };
