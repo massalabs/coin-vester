@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@massalabs/massa-web3": "^4.0.2-dev",
-    "@massalabs/react-ui-kit": "^0.0.4-next",
+    "@massalabs/react-ui-kit": "^0.0.5-dev",
     "@massalabs/wallet-provider": "^2.0.1-dev",
     "currency.js": "^2.0.4",
     "delay": "^6.0.0",
