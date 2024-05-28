@@ -5,13 +5,10 @@ import {
   fromMAS,
 } from '@massalabs/massa-web3';
 import { Button, Input, Money } from '@massalabs/react-ui-kit';
+import { useAccountStore } from '@massalabs/react-ui-kit/src/lib/ConnectMassaWallets/store';
 
-import { Card } from './Card';
 import { NumericInput } from './NumericInput';
 import { SendVestingConfirmationModal } from './SendVestingConfirmationModal';
-
-import { useAccountStore } from '../store';
-
 import Intl from '../i18n/i18n';
 
 import { DEFAULT_OP_FEES, VESTING_SESSION_STORAGE_COST } from '../const/sc';
@@ -24,6 +21,7 @@ import {
   validateTag,
   validateDuration,
 } from '../utils/validation';
+import { Card } from './Card';
 
 export interface InputsErrors {
   tag?: string;
