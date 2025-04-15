@@ -7,10 +7,10 @@ import {
   PopupModalHeader,
 } from '@massalabs/react-ui-kit';
 
-import Intl from '../i18n/i18n';
 import { fromnMAS, msToDateTimeWithTimeZone, msToTime } from '../utils';
 
 import { MoreInfoItem } from './SessionCard/MoreInfoItem';
+import Intl from '../i18n/i18n';
 
 type SendVestingConfirmationModalProps = {
   onClose: () => void;

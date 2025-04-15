@@ -1,7 +1,8 @@
-import { useAccountStore } from '../store';
-
 import { Card } from '../components/Card';
-import { ConnectMassaWallet } from '../components/ConnectMassaWallets/ConnectMassaWallet';
+import {
+  ConnectMassaWallet,
+  useAccountStore,
+} from '@massalabs/react-ui-kit/src/lib/ConnectMassaWallets';
 
 import { SendVestingCard } from '../components/SendVestingCard';
 

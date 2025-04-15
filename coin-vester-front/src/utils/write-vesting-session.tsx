@@ -6,16 +6,15 @@ import {
   MAX_GAS_CALL,
 } from '@massalabs/massa-web3';
 import { ToastContent, toast } from '@massalabs/react-ui-kit';
-import Intl from '../i18n/i18n';
-
-import { OperationToast } from '../components/Toasts/OperationToast';
+import { OperationToast } from '@massalabs/react-ui-kit/src/lib/ConnectMassaWallets/components/OperationToast';
 
 import {
   DEFAULT_OP_FEES,
   SC_ADDRESS,
   VESTING_SESSION_STORAGE_COST,
 } from '../const/sc';
-import { logSmartContractEvents } from './massa-utils';
+import Intl from '../i18n/i18n';
+import { logSmartContractEvents } from '@massalabs/react-ui-kit/src/lib/massa-react/utils';
 
 interface ToasterMessage {
   pending: string;
