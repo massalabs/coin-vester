@@ -1,0 +1,11 @@
+{
+  "address": "AS12CeYv4WAEompKzqTeCobWrMhsBfWnJZ7BVXaioAx1MEPd1hLTT",
+  "node_url": "https://mainnet.massa.net/api/v2",
+  "metadatas": {
+    "TITLE": "Massa Vesting",
+    "DESCRIPTION": "A simple coin vesting dapp.",
+    "KEYWORD1": "freedom",
+    "KEYWORD2": "decentralizedweb",
+    "KEYWORD3": "vesting"
+  }
+}
