@@ -27,7 +27,7 @@ jobs:
 
       - name: Deploy to Massa DeWeb
         id: deploy
-        uses: massalabs/deweb-gh-action@v0.0.7
+        uses: massalabs/deweb-gh-action@v0.1.2
         with:
           config_file: coin-vester-front/deweb_cli_config.mainnet.json
           source_folder: coin-vester-front/dist
