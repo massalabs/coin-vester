@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  Client,
   ClientFactory,
   Args,
   Address,
@@ -9,6 +10,7 @@ import {
 import { IAccount, providers } from '@massalabs/wallet-provider';
 
 import { SC_ADDRESS } from '../const/sc';
+import { getUserVestingKeys } from '../utils/datastore-keys';
 import { AccordionCategory, AccordionContent } from '@massalabs/react-ui-kit';
 import { FiChevronDown, FiChevronUp } from 'react-icons/fi';
 
@@ -34,7 +36,7 @@ type vestingSessionType = {
 
 function LegacyPage() {
   const [account, setAccount] = useState<IAccount | null>(null);
-  const [client, setClient] = useState<IClient | null>(null);
+  const [client, setClient] = useState<Client | null>(null);
   const [vestingSessions, setVestingSessions] = useState<vestingSessionType[]>(
     [],
   );
@@ -120,8 +122,7 @@ function LegacyPage() {
         let userAddresses = [new Address(account.address())];
 
         // get all the vesting sessions of the user
-        let addrInfo = await client.publicApi().getAddresses([SC_ADDRESS]);
-        let allKeys = addrInfo[0].candidate_datastore_keys;
+        let allKeys = await getUserVestingKeys(client, account.address());
 
         // list of sessions
         let sessions: vestingSessionType[] = [];
