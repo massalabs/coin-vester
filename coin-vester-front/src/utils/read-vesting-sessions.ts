@@ -1,6 +1,7 @@
 import { Address, Args, Client } from '@massalabs/massa-web3';
 import { VestingSession } from '../types/types';
 import { SC_ADDRESS } from '../const/sc';
+import { getUserVestingKeys } from './datastore-keys';
 import { useCallback, useState } from 'react';
 import { IAccount } from '@massalabs/wallet-provider';
 
@@ -22,8 +23,7 @@ export function useReadVestingSessions(client?: Client) {
         let userAddresses = [new Address(account.address())];
 
         // get all the vesting sessions of the user
-        let addrInfo = await client.publicApi().getAddresses([SC_ADDRESS]);
-        let allKeys = addrInfo[0].candidate_datastore_keys;
+        let allKeys = await getUserVestingKeys(client, account.address());
 
         // list of sessions
         let sessions: VestingSession[] = [];
