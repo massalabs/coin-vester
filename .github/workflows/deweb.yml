@@ -24,6 +24,10 @@ jobs:
       - name: Build
         run: npm run build
         working-directory: coin-vester-front
+        env:
+          VITE_IS_MAINNET: "true"
+          VITE_SC_ADDRESS: AS12qzyNBDnwqq2vYwvUMHzrtMkVp6nQGJJ3TETVKF5HCd4yymzJP
+          VITE_OP_FEES: "10000000"
 
       - name: Deploy to Massa DeWeb
         id: deploy
